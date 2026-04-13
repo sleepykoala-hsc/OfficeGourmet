@@ -26,6 +26,17 @@ logger = logging.getLogger(__name__)
 # 请求配置
 # ──────────────────────────────────────────────────
 
+# ──────────────────────────────────────────────────
+# 常量
+# ──────────────────────────────────────────────────
+
+# 评论文本最大长度
+MAX_REVIEW_LENGTH = 200
+# 截断时最短句子长度（低于此值不在句号/逗号处截断）
+MIN_SENTENCE_CUT_POS = 50
+# 去重时评论相似度阈值
+REVIEW_SIMILARITY_THRESHOLD = 0.6
+
 _DEFAULT_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -184,6 +195,7 @@ class DianpingClient:
             score = self._similarity(target_name, link_text)
 
             # 如果有地址信息，额外验证
+            # 按"号"分割取第一段（中文地址中"xx路xx号"是主要定位信息）
             if target_address:
                 addr_el = item.select_one(
                     '.addr, .address, [class*="addr"]'
@@ -290,7 +302,9 @@ class DianpingClient:
                     val = float(match.group(1))
                     if val <= 5.0:
                         return val
-                    if val <= 50:  # 大众点评有时显示满分50
+                    if val <= 50:
+                        # 大众点评部分页面（移动端/旧版）用口味/环境/
+                        # 服务分展示，满分10分显示为整数形式（如45→4.5）
                         return round(val / 10.0, 1)
 
         # 方法2: 从 CSS 类名中提取 (class="star_40" 代表4.0分)
@@ -594,13 +608,13 @@ class DianpingClient:
         text = re.sub(r'^(该用户|此用户|匿名用户)[^，。,\.]*[，。,\.]?\s*',
                        '', text)
         # 截断过长文本
-        if len(text) > 200:
+        if len(text) > MAX_REVIEW_LENGTH:
             # 在句号或逗号处截断
-            cut = text[:200].rfind("。")
-            if cut < 50:
-                cut = text[:200].rfind("，")
-            if cut < 50:
-                cut = 200
+            cut = text[:MAX_REVIEW_LENGTH].rfind("。")
+            if cut < MIN_SENTENCE_CUT_POS:
+                cut = text[:MAX_REVIEW_LENGTH].rfind("，")
+            if cut < MIN_SENTENCE_CUT_POS:
+                cut = MAX_REVIEW_LENGTH
             text = text[:cut + 1]
         return text
 
@@ -637,7 +651,8 @@ class DianpingClient:
         # 去重（避免相似内容）
         result = []
         for _, text in scored:
-            if not any(DianpingClient._similarity(text, existing) > 0.6
+            if not any(DianpingClient._similarity(text, existing)
+                   > REVIEW_SIMILARITY_THRESHOLD
                        for existing in result):
                 result.append(text)
 

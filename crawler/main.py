@@ -53,6 +53,9 @@ except ImportError:
     DIANPING_REQUEST_DELAY = 3
     DIANPING_MAX_REVIEWS = 2
 
+# 高德 API 默认人均价格（无数据时的占位值）
+_DEFAULT_AVG_PRICE = 25
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(message)s",
@@ -176,7 +179,7 @@ def parse_poi(poi: dict) -> dict:
         "category": category,
         "cuisine": raw_type.split(";")[0] if ";" in raw_type else raw_type[:6],
         "priceLevel": price_level,
-        "avgPrice": int(avg_price) if avg_price > 0 else 25,
+        "avgPrice": int(avg_price) if avg_price > 0 else _DEFAULT_AVG_PRICE,
         "rating": round(rating, 1),
         "ratingCount": 0,  # 高德 API 免费版不返回评价数
         "tags": _generate_tags(poi, category),
@@ -254,7 +257,8 @@ def enrich_with_dianping(restaurants: list) -> list:
             if dp_data.get("dpReviewCount"):
                 restaurant["dpReviewCount"] = dp_data["dpReviewCount"]
                 restaurant["ratingCount"] = dp_data["dpReviewCount"]
-            if dp_data.get("avgPrice") and restaurant["avgPrice"] <= 25:
+            if (dp_data.get("avgPrice")
+                    and restaurant["avgPrice"] <= _DEFAULT_AVG_PRICE):
                 restaurant["avgPrice"] = dp_data["avgPrice"]
                 restaurant["priceLevel"] = min(
                     max(round(dp_data["avgPrice"] / PRICE_PER_LEVEL), 1), 5
