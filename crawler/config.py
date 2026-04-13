@@ -29,6 +29,22 @@ MAX_RESULTS = 100
 # 输出文件路径
 OUTPUT_FILE = "data/restaurants.json"
 
-# 可选：大众点评 / 美团 Cookie（如需爬取评分数据）
+# ──────────────────────────────────────────────────
+# 大众点评数据补全（可选）
+# ──────────────────────────────────────────────────
+
+# 是否启用大众点评数据补全（评分、推荐菜、团购、关键评论）
+ENABLE_DIANPING = False
+
+# 大众点评 Cookie（登录后从浏览器复制）
+# 获取方式：
+#   1. 浏览器打开 https://www.dianping.com 并登录
+#   2. F12 → Network → 任意请求 → Headers → Cookie
+#   3. 复制完整 Cookie 字符串粘贴到下面
 DIANPING_COOKIE = ""
-MEITUAN_COOKIE = ""
+
+# 每次请求大众点评的间隔（秒），避免触发反爬
+DIANPING_REQUEST_DELAY = 3
+
+# 每家餐厅最多提取几条关键评论
+DIANPING_MAX_REVIEWS = 2
