@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """
 OfficeGourmet 餐厅数据爬虫
-使用高德地图 API 获取办公室附近的餐饮 POI 数据
+使用高德地图 API 获取办公室附近的餐饮 POI 数据，
+可选大众点评补全评分、推荐菜、团购和关键评论。
 
 使用方法:
     1. 在 config.py 中填写 AMAP_API_KEY 和 OFFICE_LOCATION
     2. pip install -r requirements.txt
-    3. python main.py
+    3. python main.py          # 仅高德数据
+    4. python main.py --dp     # 高德 + 大众点评补全
 
 输出:
     data/restaurants.json  —  可直接导入微信小程序或云数据库
 """
 
+import argparse
 import json
+import logging
 import os
 import sys
 import time
@@ -34,6 +38,25 @@ except ImportError:
     print("   cp config.example.py config.py")
     print("   然后编辑 config.py 填入您的配置。")
     sys.exit(1)
+
+# 大众点评相关配置（可选）
+try:
+    from config import (
+        ENABLE_DIANPING,
+        DIANPING_COOKIE,
+        DIANPING_REQUEST_DELAY,
+        DIANPING_MAX_REVIEWS,
+    )
+except ImportError:
+    ENABLE_DIANPING = False
+    DIANPING_COOKIE = ""
+    DIANPING_REQUEST_DELAY = 3
+    DIANPING_MAX_REVIEWS = 2
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+)
 
 # POI 类型到小程序分类的映射
 CATEGORY_MAP = {
@@ -166,7 +189,15 @@ def parse_poi(poi: dict) -> dict:
         "emoji": EMOJI_MAP.get(category, "🍽️"),
         "latitude": lat,
         "longitude": lng,
-        "isActive": True
+        "isActive": True,
+        # 大众点评补全字段（初始为空，由 enrich_with_dianping 填充）
+        "dpRating": 0,
+        "dpReviewCount": 0,
+        "recommendDishes": [],
+        "hasDeal": False,
+        "deals": [],
+        "keyReviews": [],
+        "dpUrl": "",
     }
 
 
@@ -191,7 +222,65 @@ def _generate_tags(poi: dict, category: str) -> list:
     return tags[:4]  # 最多 4 个标签
 
 
-def crawl_and_save():
+def enrich_with_dianping(restaurants: list) -> list:
+    """使用大众点评数据补全餐厅信息"""
+    from dianping import DianpingClient
+
+    print(f"\n🔗 开始大众点评数据补全（共 {len(restaurants)} 家）...")
+    if not DIANPING_COOKIE:
+        print("  ⚠️  未设置 DIANPING_COOKIE，部分页面可能无法访问")
+        print("  💡 建议在 config.py 中设置 Cookie 以获取更完整的数据\n")
+
+    client = DianpingClient(
+        cookie=DIANPING_COOKIE,
+        request_delay=DIANPING_REQUEST_DELAY,
+        max_reviews=DIANPING_MAX_REVIEWS,
+    )
+
+    city = OFFICE_LOCATION.get("city", "北京")
+    enriched_count = 0
+
+    for i, restaurant in enumerate(restaurants):
+        name = restaurant["name"]
+        address = restaurant.get("address", "")
+        print(f"  [{i + 1}/{len(restaurants)}] {name}...", end=" ")
+
+        dp_data = client.enrich_restaurant(name, city, address)
+
+        if dp_data:
+            # 合并大众点评数据（仅更新非空字段）
+            if dp_data.get("dpRating"):
+                restaurant["dpRating"] = dp_data["dpRating"]
+            if dp_data.get("dpReviewCount"):
+                restaurant["dpReviewCount"] = dp_data["dpReviewCount"]
+                restaurant["ratingCount"] = dp_data["dpReviewCount"]
+            if dp_data.get("avgPrice") and restaurant["avgPrice"] <= 25:
+                restaurant["avgPrice"] = dp_data["avgPrice"]
+                restaurant["priceLevel"] = min(
+                    max(round(dp_data["avgPrice"] / PRICE_PER_LEVEL), 1), 5
+                )
+            if dp_data.get("cuisine"):
+                restaurant["cuisine"] = dp_data["cuisine"]
+            if dp_data.get("recommendDishes"):
+                restaurant["recommendDishes"] = dp_data["recommendDishes"]
+            restaurant["hasDeal"] = dp_data.get("hasDeal", False)
+            if dp_data.get("deals"):
+                restaurant["deals"] = dp_data["deals"]
+            if dp_data.get("keyReviews"):
+                restaurant["keyReviews"] = dp_data["keyReviews"]
+            if dp_data.get("dpUrl"):
+                restaurant["dpUrl"] = dp_data["dpUrl"]
+
+            enriched_count += 1
+            print("✅")
+        else:
+            print("⏭️  未找到")
+
+    print(f"\n📊 大众点评补全完成: {enriched_count}/{len(restaurants)} 家成功")
+    return restaurants
+
+
+def crawl_and_save(use_dianping: bool = False):
     """主爬取流程"""
     if AMAP_API_KEY == "YOUR_AMAP_API_KEY_HERE":
         print("⚠️  请先在 config.py 中设置 AMAP_API_KEY！")
@@ -242,12 +331,21 @@ def crawl_and_save():
             seen_ids.add(r["id"])
             unique.append(r)
 
+    print(f"\n📦 高德地图数据获取完成: {len(unique)} 家餐厅")
+
+    # 大众点评数据补全
+    if use_dianping:
+        unique = enrich_with_dianping(unique)
+
     # 保存
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(unique, f, ensure_ascii=False, indent=2)
 
     print(f"\n🎉 完成！共保存 {len(unique)} 家餐厅数据至 {OUTPUT_FILE}")
+    if use_dianping:
+        dp_count = sum(1 for r in unique if r.get("dpUrl"))
+        print(f"   其中 {dp_count} 家已补全大众点评数据")
     print("\n📤 导入到微信云数据库的步骤：")
     print("   1. 打开微信开发者工具 → 云开发控制台")
     print("   2. 新建集合 'restaurants'")
@@ -266,5 +364,21 @@ def _use_sample_data():
         print(f"❌ 示例数据文件不存在: {sample_file}")
 
 
+def main():
+    parser = argparse.ArgumentParser(
+        description="OfficeGourmet 餐厅数据爬虫"
+    )
+    parser.add_argument(
+        "--dp", "--dianping",
+        action="store_true",
+        dest="dianping",
+        help="启用大众点评数据补全（评分、推荐菜、团购、关键评论）",
+    )
+    args = parser.parse_args()
+
+    use_dp = args.dianping or ENABLE_DIANPING
+    crawl_and_save(use_dianping=use_dp)
+
+
 if __name__ == "__main__":
-    crawl_and_save()
+    main()

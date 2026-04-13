@@ -32,7 +32,8 @@ OfficeGourmet/
 │   ├── getRecommendation/# 服务端加权推荐
 │   └── updatePreference/ # 同步用户偏好至云端
 └── crawler/              # Python 数据爬虫
-    ├── main.py           # 高德地图 API 爬虫
+    ├── main.py           # 高德地图 API 爬虫 + 大众点评补全
+    ├── dianping.py       # 大众点评数据获取模块
     ├── config.py         # API Key 和位置配置
     ├── requirements.txt
     └── data/
@@ -68,6 +69,29 @@ python main.py
 ```
 
 运行后会在 `crawler/data/restaurants.json` 生成餐厅数据。
+
+#### 大众点评数据补全（可选）
+
+在高德 POI 基础上，自动补全大众点评的评分、推荐菜、团购信息和关键评论：
+
+```bash
+# 方式一：命令行参数启用
+python main.py --dp
+
+# 方式二：在 config.py 中设置 ENABLE_DIANPING = True
+python main.py
+```
+
+为获取更完整的数据，建议在 `config.py` 中配置大众点评 Cookie：
+1. 浏览器打开 https://www.dianping.com 并登录
+2. F12 → Network → 任意请求 → Headers → 复制 Cookie
+3. 粘贴到 `config.py` 的 `DIANPING_COOKIE`
+
+补全后每家餐厅会新增以下字段：
+- `dpRating` — 大众点评评分
+- `recommendDishes` — 推荐菜品列表
+- `hasDeal` / `deals` — 团购信息
+- `keyReviews` — 1-2 条最有价值的评论
 
 **导入到云数据库：**
 
