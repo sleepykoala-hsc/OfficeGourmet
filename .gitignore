@@ -1,0 +1,28 @@
+# 微信开发者工具生成的本地配置文件（含 AppID，勿提交）
+miniprogram/project.private.config.json
+
+# 爬虫：敏感配置（含 API Key），使用 config.example.py 代替
+crawler/config.py
+
+# 爬虫：实际抓取到的数据（可能含隐私信息）
+crawler/data/restaurants.json
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# 依赖目录
+node_modules/
+cloudfunctions/*/node_modules/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# IDE 配置
+.idea/
+.vscode/
+*.swp
+*.swo

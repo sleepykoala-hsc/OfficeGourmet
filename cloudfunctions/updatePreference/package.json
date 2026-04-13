@@ -1,0 +1,12 @@
+{
+  "name": "updatePreference",
+  "version": "1.0.0",
+  "description": "更新用户偏好云函数（收藏/黑名单）",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"no test\""
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

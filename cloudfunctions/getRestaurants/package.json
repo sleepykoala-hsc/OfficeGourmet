@@ -1,0 +1,12 @@
+{
+  "name": "getRestaurants",
+  "version": "1.0.0",
+  "description": "获取餐厅列表云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"no test\""
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
