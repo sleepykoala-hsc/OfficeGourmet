@@ -1,0 +1,109 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <!-- 顶部标题区域 -->
+  <view class="header">
+    <text class="header-title">今天吃什么？</text>
+    <text class="header-subtitle">{{mealTimeLabel}}·为你智能推荐</text>
+  </view>
+
+  <!-- 用餐时段切换 -->
+  <view class="meal-tabs">
+    <view
+      class="meal-tab {{mealType === 'lunch' ? 'meal-tab-active' : ''}}"
+      bindtap="setMealType"
+      data-type="lunch"
+    >🌞 午餐</view>
+    <view
+      class="meal-tab {{mealType === 'dinner' ? 'meal-tab-active' : ''}}"
+      bindtap="setMealType"
+      data-type="dinner"
+    >🌙 晚餐</view>
+  </view>
+
+  <!-- 推荐结果卡片 -->
+  <view class="recommend-area">
+    <!-- 空状态 -->
+    <view wx:if="{{!currentRestaurant && !isSpinning}}" class="empty-card card">
+      <text class="empty-icon">🍽️</text>
+      <text class="empty-hint">点击下方按钮，随机为你选一家！</text>
+    </view>
+
+    <!-- 转动中动画 -->
+    <view wx:elif="{{isSpinning}}" class="spinning-card card">
+      <text class="spinning-emoji">{{spinningEmoji}}</text>
+      <text class="spinning-text">选择中...</text>
+    </view>
+
+    <!-- 推荐卡片 -->
+    <view wx:elif="{{currentRestaurant}}" class="result-card card" bindtap="goToDetail">
+      <!-- 餐厅 emoji + 名称 -->
+      <view class="result-header">
+        <text class="result-emoji">{{currentRestaurant.emoji}}</text>
+        <view class="result-info">
+          <text class="result-name">{{currentRestaurant.name}}</text>
+          <view class="result-meta">
+            <text class="result-cuisine">{{currentRestaurant.cuisine}}</text>
+            <text class="result-dot">·</text>
+            <text class="result-price">¥{{currentRestaurant.avgPrice}}/人</text>
+          </view>
+        </view>
+        <!-- 收藏按钮 -->
+        <view class="favorite-btn" catchtap="toggleFavorite">
+          <text class="{{isFavorite ? 'favorite-active' : 'favorite-inactive'}}">{{isFavorite ? '❤️' : '🤍'}}</text>
+        </view>
+      </view>
+
+      <!-- 评分 -->
+      <view class="result-rating">
+        <text class="star-text">{{ratingStars}}</text>
+        <text class="rating-num">{{currentRestaurant.rating}}</text>
+        <text class="rating-count">({{currentRestaurant.ratingCount}}条评价)</text>
+      </view>
+
+      <!-- 标签 -->
+      <view class="result-tags">
+        <text wx:for="{{currentRestaurant.tags}}" wx:key="*this" class="tag tag-orange">{{item}}</text>
+      </view>
+
+      <!-- 位置信息 -->
+      <view class="result-footer">
+        <text class="result-distance">📍 {{currentRestaurant.address}}</text>
+        <text class="result-hours">⏰ {{currentRestaurant.openHours}}</text>
+      </view>
+
+      <view class="result-description">{{currentRestaurant.description}}</view>
+
+      <view class="detail-hint">点击查看详情 ›</view>
+    </view>
+  </view>
+
+  <!-- 操作按钮区域 -->
+  <view class="action-area">
+    <button class="btn-primary roll-btn" bindtap="rollRandom" disabled="{{isSpinning}}">
+      {{currentRestaurant ? '🎲 换一家' : '🎲 随机选一家'}}
+    </button>
+    <view wx:if="{{currentRestaurant}}" class="secondary-actions">
+      <button class="btn-secondary" bindtap="confirmChoice">✅ 就吃这家</button>
+      <button class="btn-secondary btn-blacklist" catchtap="blacklistCurrent">🚫 不想吃</button>
+    </view>
+  </view>
+
+  <!-- 快捷过滤标签 -->
+  <view class="filter-section">
+    <text class="filter-title">快速筛选</text>
+    <scroll-view scroll-x class="filter-scroll">
+      <view class="filter-tags">
+        <view
+          wx:for="{{categories}}"
+          wx:key="*this"
+          class="filter-tag {{activeCategory === item ? 'filter-tag-active' : ''}}"
+          bindtap="setCategory"
+          data-category="{{item}}"
+        >{{item}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 底部安全区 -->
+  <view class="safe-bottom"></view>
+</view>

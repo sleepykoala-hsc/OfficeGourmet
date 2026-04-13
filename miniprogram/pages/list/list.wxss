@@ -1,0 +1,195 @@
+/* pages/list/list.wxss */
+
+/* 搜索栏 */
+.search-bar {
+  margin-bottom: 20rpx;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 50rpx;
+  padding: 16rpx 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.search-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+  color: #999;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  height: 48rpx;
+}
+
+.search-placeholder {
+  color: #ccc;
+  font-size: 28rpx;
+}
+
+.search-clear {
+  padding: 8rpx 12rpx;
+  color: #bbb;
+  font-size: 28rpx;
+}
+
+/* 分类标签 */
+.category-scroll {
+  margin-bottom: 20rpx;
+  white-space: nowrap;
+}
+
+.category-tabs {
+  display: flex;
+  padding: 4rpx 0 12rpx;
+}
+
+.category-tab {
+  display: inline-block;
+  padding: 14rpx 28rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #666;
+  background: #fff;
+  margin-right: 16rpx;
+  border: 2rpx solid #eee;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.category-tab-active {
+  background: #FF6B35;
+  color: #fff;
+  border-color: #FF6B35;
+}
+
+/* 排序栏 */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.result-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.sort-options {
+  display: flex;
+  gap: 16rpx;
+}
+
+.sort-option {
+  font-size: 24rpx;
+  color: #999;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+}
+
+.sort-option-active {
+  color: #FF6B35;
+  background: #FFF0E8;
+}
+
+/* 餐厅列表 */
+.restaurant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.restaurant-item {
+  display: flex;
+  padding: 28rpx;
+  background: #fff;
+}
+
+.item-left {
+  position: relative;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.item-emoji {
+  font-size: 70rpx;
+  display: block;
+  width: 80rpx;
+  text-align: center;
+}
+
+.item-favorite-mark {
+  position: absolute;
+  top: -6rpx;
+  right: -6rpx;
+  font-size: 24rpx;
+}
+
+.item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.item-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.item-price {
+  font-size: 28rpx;
+  color: #FF6B35;
+  font-weight: 600;
+  margin-left: 16rpx;
+}
+
+.item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+  flex-wrap: wrap;
+}
+
+.item-category {
+  font-size: 22rpx;
+  flex-shrink: 0;
+}
+
+.item-rating {
+  font-size: 22rpx;
+  color: #FFC107;
+}
+
+.item-distance {
+  font-size: 22rpx;
+  color: #888;
+}
+
+.item-tags {
+  margin-bottom: 10rpx;
+}
+
+.item-tags .tag {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+}
+
+.item-hours {
+  font-size: 22rpx;
+  color: #bbb;
+}

@@ -1,0 +1,87 @@
+<!-- pages/list/list.wxml -->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        placeholder="搜索餐厅名称或口味..."
+        placeholder-class="search-placeholder"
+        value="{{searchKeyword}}"
+        bindinput="onSearch"
+        confirm-type="search"
+      />
+      <view wx:if="{{searchKeyword}}" class="search-clear" bindtap="clearSearch">✕</view>
+    </view>
+  </view>
+
+  <!-- 分类过滤 -->
+  <scroll-view scroll-x class="category-scroll">
+    <view class="category-tabs">
+      <view
+        wx:for="{{categories}}"
+        wx:key="*this"
+        class="category-tab {{activeCategory === item ? 'category-tab-active' : ''}}"
+        bindtap="setCategory"
+        data-category="{{item}}"
+      >{{item}}</view>
+    </view>
+  </scroll-view>
+
+  <!-- 排序栏 -->
+  <view class="sort-bar">
+    <text class="result-count">找到 {{filteredRestaurants.length}} 家餐厅</text>
+    <view class="sort-options">
+      <view
+        wx:for="{{sortOptions}}"
+        wx:key="value"
+        class="sort-option {{sortBy === item.value ? 'sort-option-active' : ''}}"
+        bindtap="setSort"
+        data-sort="{{item.value}}"
+      >{{item.label}}</view>
+    </view>
+  </view>
+
+  <!-- 餐厅列表 -->
+  <view wx:if="{{filteredRestaurants.length === 0}}" class="empty">
+    <text class="empty-icon">🍽️</text>
+    <text class="empty-text">暂无符合条件的餐厅</text>
+  </view>
+
+  <view wx:else class="restaurant-list">
+    <view
+      wx:for="{{filteredRestaurants}}"
+      wx:key="id"
+      class="restaurant-item card"
+      bindtap="goToDetail"
+      data-id="{{item.id}}"
+    >
+      <!-- 左侧 emoji -->
+      <view class="item-left">
+        <text class="item-emoji">{{item.emoji}}</text>
+        <view wx:if="{{item.isFavorite}}" class="item-favorite-mark">❤️</view>
+      </view>
+
+      <!-- 右侧内容 -->
+      <view class="item-content">
+        <view class="item-header">
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-price">¥{{item.avgPrice}}</text>
+        </view>
+        <view class="item-meta">
+          <text class="item-category tag tag-orange">{{item.category}}</text>
+          <text class="item-rating">★ {{item.rating}}</text>
+          <text class="item-distance">📍{{item.distance}}m</text>
+        </view>
+        <view class="item-tags">
+          <text wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag" class="tag tag-gray">{{tag}}</text>
+        </view>
+        <text class="item-hours">⏰ {{item.openHours}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全区 -->
+  <view class="safe-bottom"></view>
+</view>
