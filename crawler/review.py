@@ -81,7 +81,7 @@ def parse_value(raw: str, original: Any) -> Any:
         # 以中文逗号或英文逗号分隔
         items = [item.strip() for item in raw.replace("，", ",").split(",") if item.strip()]
         # 如果列表元素是数字，保持类型
-        if original and isinstance(original[0], (int, float)):
+        if len(original) > 0 and isinstance(original[0], (int, float)):
             try:
                 return [type(original[0])(i) for i in items]
             except ValueError:
@@ -115,7 +115,7 @@ def print_record(idx: int, total: int, record: dict) -> None:
     print(colored(f"  [{idx + 1}/{total}]  ", BOLD) + colored(record.get("name", "(无名称)"), BOLD + YELLOW))
     print(hr())
     keys = list(record.keys())
-    width = max(len(k) for k in keys) + 2
+    width = max((len(k) for k in keys), default=0) + 2
     for i, k in enumerate(keys):
         num = colored(f"  {i + 1:>2}.", DIM)
         key = colored(f"{k:<{width}}", BOLD)
@@ -157,10 +157,10 @@ def print_list(data: list[dict], page: int, page_size: int = 20) -> int:
 
 # ── 记录编辑界面 ───────────────────────────────────────────────────────────────
 
-def edit_record(data: list[dict], idx: int, path: str) -> bool:
+def edit_record(data: list[dict], idx: int, path: str) -> int:
     """
-    返回 True 表示继续留在当前记录（字段已修改），
-    返回 False 表示返回列表。
+    交互式编辑单条记录，支持字段修改、删除及前后导航。
+    返回退出时所在记录的索引（调用方可用来保留列表光标位置）。
     """
     while True:
         record = data[idx]
@@ -179,7 +179,7 @@ def edit_record(data: list[dict], idx: int, path: str) -> bool:
         raw = input("  请输入操作: ").strip().lower()
 
         if raw in ("b", ""):
-            return False
+            return idx
 
         if raw == "d":
             confirm = input(colored(f"  确认删除「{record.get('name')}」？[y/N] ", RED)).strip().lower()
@@ -187,7 +187,8 @@ def edit_record(data: list[dict], idx: int, path: str) -> bool:
                 deleted = data.pop(idx)
                 save_data(path, data)
                 print(colored(f"  ✓ 已删除「{deleted.get('name')}」", GREEN))
-                return False
+                # 若删除的不是最后一条，保持索引指向后续记录；否则退到前一条
+                return min(idx, len(data) - 1) if data else -1
             print(colored("  已取消", DIM))
             continue
 
@@ -269,7 +270,11 @@ def main() -> None:
             print(colored("  编号超出范围", YELLOW))
             continue
 
-        edit_record(data, record_no, path)
+        last_idx = edit_record(data, record_no, path)
+        # 删完所有记录时退出
+        if not data:
+            print(colored("  数据已清空，退出。", YELLOW))
+            break
 
 
 if __name__ == "__main__":
