@@ -301,7 +301,7 @@ class DianpingClient:
                 if match:
                     val = float(match.group(1))
                     if val <= 5.0:
-                        return val
+                        return round(val, 1)
                     if val <= 50:
                         # 大众点评部分页面（移动端/旧版）用口味/环境/
                         # 服务分展示，满分10分显示为整数形式（如45→4.5）
@@ -313,7 +313,7 @@ class DianpingClient:
             for cls in star_el.get("class", []):
                 match = re.search(r'star_(\d+)', cls)
                 if match:
-                    return float(match.group(1)) / 10.0
+                    return round(float(match.group(1)) / 10.0, 1)
 
         # 方法3: 从 JSON-LD 或 script 标签中提取
         for script in soup.find_all("script", type="application/ld+json"):
@@ -325,7 +325,7 @@ class DianpingClient:
                         "ratingValue"
                     )
                     if rating:
-                        return float(rating)
+                        return round(float(rating), 1)
             except (ValueError, TypeError, KeyError):
                 pass
 
