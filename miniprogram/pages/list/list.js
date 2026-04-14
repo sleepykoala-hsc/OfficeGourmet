@@ -86,14 +86,14 @@ Page({
       result = result.filter(r =>
         r.name.toLowerCase().includes(kw) ||
         r.cuisine.toLowerCase().includes(kw) ||
-        r.category.toLowerCase().includes(kw) ||
+        (r.cuisineType || '').toLowerCase().includes(kw) ||
         r.tags.some(t => t.toLowerCase().includes(kw))
       )
     }
 
     // 分类过滤
     if (activeCategory && activeCategory !== '全部') {
-      result = result.filter(r => r.category === activeCategory)
+      result = result.filter(r => r.cuisineType === activeCategory)
     }
 
     // 排序

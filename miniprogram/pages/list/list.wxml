@@ -70,7 +70,7 @@
           <text class="item-price">¥{{item.avgPrice}}</text>
         </view>
         <view class="item-meta">
-          <text class="item-category tag tag-orange">{{item.category}}</text>
+          <text class="item-category tag tag-orange">{{item.cuisineType || item.category}}</text>
           <text class="item-rating">★ {{item.rating}}</text>
           <text class="item-distance">📍{{item.distance}}m</text>
         </view>
