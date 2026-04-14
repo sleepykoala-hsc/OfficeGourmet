@@ -2,7 +2,8 @@
 const { restaurants: localRestaurants } = require('../../data/restaurants')
 const util = require('../../utils/util')
 
-const ALL_CUISINES = ['中式', '日式', '韩式', '西式', '粤式', '台式', '素食', '东南亚', '西式快餐']
+// 所有菜系类别（用于权重配置）
+const ALL_CUISINE_TYPES = ['中式', '日式', '韩式', '西式', '粤式', '台式', '素食', '东南亚', '西式快餐']
 
 Page({
   data: {
@@ -14,7 +15,15 @@ Page({
       maxPrice: 100,
       favoriteCuisines: []
     },
-    allCuisines: ALL_CUISINES
+    allCuisineTypes: ALL_CUISINE_TYPES,
+    // 菜系权重 { cuisineType: percentage }
+    cuisineWeights: {},
+    // 特殊规则开关
+    specialRules: {
+      burgerDay: false,
+      coffeeTime: false,
+      eatBetter: false
+    }
   },
 
   onShow() {
@@ -29,6 +38,21 @@ Page({
     const preferences = wx.getStorageSync('preferences') || {
       maxPrice: 100,
       favoriteCuisines: []
+    }
+
+    // 菜系权重
+    let cuisineWeights = wx.getStorageSync('cuisineWeights')
+    if (!cuisineWeights || Object.keys(cuisineWeights).length === 0) {
+      const restaurants = wx.getStorageSync('restaurants') || localRestaurants
+      cuisineWeights = util.getDefaultCuisineWeights(restaurants)
+      wx.setStorageSync('cuisineWeights', cuisineWeights)
+    }
+
+    // 特殊规则
+    const specialRules = wx.getStorageSync('specialRules') || {
+      burgerDay: false,
+      coffeeTime: false,
+      eatBetter: false
     }
 
     // 最近访问列表
@@ -50,7 +74,9 @@ Page({
       favoriteCount: favorites.length,
       blacklistCount: blacklist.length,
       recentList,
-      preferences
+      preferences,
+      cuisineWeights,
+      specialRules
     })
   },
 
@@ -73,6 +99,44 @@ Page({
     const preferences = { ...this.data.preferences, favoriteCuisines }
     wx.setStorageSync('preferences', preferences)
     this.setData({ preferences })
+  },
+
+  // —— 菜系权重配置 ——
+
+  onCuisineWeightChange(e) {
+    const cuisineType = e.currentTarget.dataset.cuisine
+    const value = Number(e.detail.value)
+    const cuisineWeights = { ...this.data.cuisineWeights, [cuisineType]: value }
+    wx.setStorageSync('cuisineWeights', cuisineWeights)
+    this.setData({ cuisineWeights })
+  },
+
+  resetCuisineWeights() {
+    const restaurants = wx.getStorageSync('restaurants') || localRestaurants
+    const cuisineWeights = util.getDefaultCuisineWeights(restaurants)
+    wx.setStorageSync('cuisineWeights', cuisineWeights)
+    this.setData({ cuisineWeights })
+    wx.showToast({ title: '已重置为均匀分配', icon: 'none' })
+  },
+
+  // —— 特殊规则开关 ——
+
+  toggleBurgerDay(e) {
+    const specialRules = { ...this.data.specialRules, burgerDay: e.detail.value }
+    wx.setStorageSync('specialRules', specialRules)
+    this.setData({ specialRules })
+  },
+
+  toggleCoffeeTime(e) {
+    const specialRules = { ...this.data.specialRules, coffeeTime: e.detail.value }
+    wx.setStorageSync('specialRules', specialRules)
+    this.setData({ specialRules })
+  },
+
+  toggleEatBetter(e) {
+    const specialRules = { ...this.data.specialRules, eatBetter: e.detail.value }
+    wx.setStorageSync('specialRules', specialRules)
+    this.setData({ specialRules })
   },
 
   clearHistory() {
@@ -166,6 +230,8 @@ Page({
           wx.setStorageSync('history', {})
           wx.setStorageSync('historyList', [])
           wx.setStorageSync('preferences', { maxPrice: 100, favoriteCuisines: [] })
+          wx.setStorageSync('cuisineWeights', {})
+          wx.setStorageSync('specialRules', { burgerDay: false, coffeeTime: false, eatBetter: false })
           this.loadData()
           wx.showToast({ title: '已重置', icon: 'success' })
         }

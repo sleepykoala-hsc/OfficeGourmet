@@ -80,12 +80,91 @@
     </view>
     <view class="cuisine-tags">
       <view
-        wx:for="{{allCuisines}}"
+        wx:for="{{allCuisineTypes}}"
         wx:key="*this"
         class="cuisine-tag {{preferences.favoriteCuisines.includes(item) ? 'cuisine-tag-active' : ''}}"
         bindtap="toggleCuisine"
         data-cuisine="{{item}}"
       >{{item}}</view>
+    </view>
+  </view>
+
+  <!-- 菜系概率配置 -->
+  <view class="section-header">
+    <text class="section-label">菜系随机概率</text>
+    <text class="section-clear" bindtap="resetCuisineWeights">重置</text>
+  </view>
+  <view class="settings-card card">
+    <view class="cuisine-weight-hint">
+      <text class="hint-text">调整每个菜系被随机到的概率（%），数值越高越容易被推荐</text>
+    </view>
+    <view
+      wx:for="{{allCuisineTypes}}"
+      wx:key="*this"
+      class="cuisine-weight-item"
+    >
+      <view class="cuisine-weight-header">
+        <text class="cuisine-weight-name">{{item}}</text>
+        <text class="cuisine-weight-value">{{cuisineWeights[item] || 0}}%</text>
+      </view>
+      <slider
+        min="0"
+        max="100"
+        step="1"
+        value="{{cuisineWeights[item] || 0}}"
+        activeColor="#FF6B35"
+        data-cuisine="{{item}}"
+        bindchange="onCuisineWeightChange"
+      />
+    </view>
+  </view>
+
+  <!-- 特殊规则 -->
+  <view class="section-header">
+    <text class="section-label">🎯 特殊规则</text>
+  </view>
+  <view class="settings-card card">
+    <!-- Burger Day -->
+    <view class="settings-item special-rule-item">
+      <view class="special-rule-info">
+        <text class="special-rule-name">🍔 Burger Day</text>
+        <text class="special-rule-desc">每周四将西式快餐随机概率提升到 80%</text>
+      </view>
+      <switch
+        checked="{{specialRules.burgerDay}}"
+        color="#FF6B35"
+        bindchange="toggleBurgerDay"
+      />
+    </view>
+
+    <view class="divider"></view>
+
+    <!-- Coffee Time -->
+    <view class="settings-item special-rule-item">
+      <view class="special-rule-info">
+        <text class="special-rule-name">☕ Coffee Time</text>
+        <text class="special-rule-desc">10% 概率额外推荐一家咖啡饮料店</text>
+      </view>
+      <switch
+        checked="{{specialRules.coffeeTime}}"
+        color="#FF6B35"
+        bindchange="toggleCoffeeTime"
+      />
+    </view>
+
+    <view class="divider"></view>
+
+    <!-- 吃点好的 -->
+    <view class="settings-item special-rule-item">
+      <view class="special-rule-info">
+        <text class="special-rule-name">✨ 吃点好的</text>
+        <text class="special-rule-desc">4% 概率无视其他规则，推荐人均 &gt; ¥100 的店铺</text>
+      </view>
+      <switch
+        checked="{{specialRules.eatBetter}}"
+        color="#FF6B35"
+        bindchange="toggleEatBetter"
+      />
     </view>
   </view>
 

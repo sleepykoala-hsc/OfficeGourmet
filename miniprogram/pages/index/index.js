@@ -1,24 +1,31 @@
 // pages/index/index.js
 const util = require('../../utils/util')
+const { getXuhuiWeather } = require('../../utils/weather')
 const { restaurants: localRestaurants } = require('../../data/restaurants')
 
 const SPIN_DURATION = 1500 // 动画时长 ms
 const SPIN_INTERVAL = 150  // 每帧间隔 ms
 
 const ALL_EMOJIS = ['🍜', '🍛', '🥗', '🍱', '🍣', '🍔', '🥩', '🍲', '🥟', '🍝']
-const CATEGORIES = ['全部', '中式', '日式', '韩式', '西式', '粤式', '台式', '素食', '东南亚']
+
+// 菜系过滤列表（使用 cuisineType）
+const CUISINE_TYPES = ['全部', '中式', '日式', '韩式', '西式', '粤式', '台式', '素食', '东南亚', '西式快餐']
 
 Page({
   data: {
     mealType: 'lunch',
     mealTimeLabel: '午餐',
     currentRestaurant: null,
+    coffeeShop: null,       // coffee time 额外推荐
+    ruleApplied: '',        // 当前生效的规则
     isSpinning: false,
     spinningEmoji: '🎲',
     isFavorite: false,
     ratingStars: '',
-    categories: CATEGORIES,
-    activeCategory: '全部'
+    cuisineTypes: CUISINE_TYPES,
+    activeCuisineType: '全部',
+    weatherInfo: '',        // 天气显示文本
+    isRainy: false          // 当前是否下雨
   },
 
   onLoad() {
@@ -29,6 +36,8 @@ Page({
       mealType: validType,
       mealTimeLabel: validType === 'lunch' ? '午餐' : '晚餐'
     })
+    // 初次加载查询天气
+    this._fetchWeather()
   },
 
   onShow() {
@@ -41,6 +50,19 @@ Page({
     }
   },
 
+  // 查询天气
+  _fetchWeather() {
+    getXuhuiWeather().then(res => {
+      const weatherText = res.error
+        ? ''
+        : `${res.weather} ${res.temperature}°C`
+      this.setData({
+        weatherInfo: weatherText,
+        isRainy: res.isRainy
+      })
+    })
+  },
+
   // 切换用餐类型
   setMealType(e) {
     const type = e.currentTarget.dataset.type
@@ -48,16 +70,18 @@ Page({
       mealType: type,
       mealTimeLabel: type === 'lunch' ? '午餐' : '晚餐',
       currentRestaurant: null,
-      activeCategory: '全部'
+      coffeeShop: null,
+      ruleApplied: '',
+      activeCuisineType: '全部'
     })
   },
 
-  // 设置品类筛选
-  setCategory(e) {
-    const category = e.currentTarget.dataset.category
-    this.setData({ activeCategory: category })
+  // 设置菜系筛选
+  setCuisineType(e) {
+    const cuisineType = e.currentTarget.dataset.cuisinetype
+    this.setData({ activeCuisineType: cuisineType })
     // 如果已有推荐，直接重新推荐
-    if (this.data.currentRestaurant || this.data.activeCategory !== category) {
+    if (this.data.currentRestaurant || this.data.activeCuisineType !== cuisineType) {
       this.rollRandom()
     }
   },
@@ -65,7 +89,7 @@ Page({
   // 随机推荐
   rollRandom() {
     if (this.data.isSpinning) return
-    this.setData({ isSpinning: true, currentRestaurant: null })
+    this.setData({ isSpinning: true, currentRestaurant: null, coffeeShop: null, ruleApplied: '' })
 
     // 动画帧
     let frameCount = 0
@@ -82,44 +106,44 @@ Page({
   },
 
   _doRecommend() {
-    const app = getApp()
     const blacklist = wx.getStorageSync('blacklist') || []
     const favorites = wx.getStorageSync('favorites') || []
     const history = wx.getStorageSync('history') || {}
-    const preferences = wx.getStorageSync('preferences') || {}
+    const cuisineWeights = wx.getStorageSync('cuisineWeights') || {}
+    const specialRules = wx.getStorageSync('specialRules') || {}
 
-    let restaurants = wx.getStorageSync('restaurants') || localRestaurants
+    const restaurants = wx.getStorageSync('restaurants') || localRestaurants
 
-    // 按品类过滤
-    if (this.data.activeCategory && this.data.activeCategory !== '全部') {
-      const filtered = restaurants.filter(r => r.category === this.data.activeCategory)
-      if (filtered.length > 0) restaurants = filtered
-    }
-
-    const result = util.recommend(
-      restaurants,
-      this.data.mealType,
+    const result = util.recommend({
+      allRestaurants: restaurants,
+      mealType: this.data.mealType,
       blacklist,
       favorites,
       history,
-      preferences
-    )
+      cuisineWeights,
+      specialRules,
+      isRainy: this.data.isRainy,
+      filterCuisineType: this.data.activeCuisineType
+    })
 
-    if (!result) {
+    if (!result.restaurant) {
       this.setData({ isSpinning: false })
       wx.showToast({ title: '没有找到合适的餐厅', icon: 'none' })
       return
     }
 
-    const isFavorite = favorites.includes(result.id)
-    const fullStars = Math.floor(result.rating)
-    const halfStar = result.rating % 1 >= 0.5 ? '½' : ''
+    const r = result.restaurant
+    const isFavorite = favorites.includes(r.id)
+    const fullStars = Math.floor(r.rating)
+    const halfStar = r.rating % 1 >= 0.5 ? '½' : ''
     const emptyStars = '☆'.repeat(5 - fullStars - (halfStar ? 1 : 0))
     const ratingStars = '★'.repeat(fullStars) + halfStar + emptyStars
 
     this.setData({
       isSpinning: false,
-      currentRestaurant: result,
+      currentRestaurant: r,
+      coffeeShop: result.coffeeShop || null,
+      ruleApplied: result.ruleApplied || '',
       isFavorite,
       ratingStars
     })

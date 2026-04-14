@@ -232,6 +232,79 @@
   color: #FF6B35;
 }
 
+/* 天气信息 */
+.header-weather {
+  display: block;
+  font-size: 24rpx;
+  color: #888;
+  margin-top: 6rpx;
+}
+
+/* 规则提示标签 */
+.rule-badge {
+  display: inline-block;
+  margin-bottom: 16rpx;
+}
+
+.rule-badge-text {
+  display: inline-block;
+  background: linear-gradient(135deg, #FF6B35, #FF8C42);
+  color: #fff;
+  font-size: 22rpx;
+  padding: 6rpx 18rpx;
+  border-radius: 20rpx;
+}
+
+/* Coffee Time 卡片 */
+.coffee-card {
+  margin-top: 20rpx;
+  padding: 24rpx 28rpx;
+  background: linear-gradient(135deg, #f5ebe0, #fff8f0);
+  border: 2rpx solid #d4a373;
+}
+
+.coffee-header {
+  margin-bottom: 16rpx;
+}
+
+.coffee-badge {
+  display: inline-block;
+  background: #6f4e37;
+  color: #fff;
+  font-size: 22rpx;
+  padding: 6rpx 18rpx;
+  border-radius: 20rpx;
+  font-weight: 600;
+}
+
+.coffee-body {
+  display: flex;
+  align-items: center;
+}
+
+.coffee-emoji {
+  font-size: 50rpx;
+  margin-right: 16rpx;
+}
+
+.coffee-info {
+  flex: 1;
+}
+
+.coffee-name {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.coffee-detail {
+  display: block;
+  font-size: 24rpx;
+  color: #888;
+}
+
 /* 操作按钮 */
 .action-area {
   margin-bottom: 40rpx;

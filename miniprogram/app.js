@@ -36,6 +36,18 @@ App({
         mealTypes: ['lunch', 'dinner']
       })
     }
+    // 初始化菜系权重（空对象表示稍后由 profile 页用 getDefaultCuisineWeights 初始化）
+    if (!wx.getStorageSync('cuisineWeights')) {
+      wx.setStorageSync('cuisineWeights', {})
+    }
+    // 初始化特殊规则开关
+    if (!wx.getStorageSync('specialRules')) {
+      wx.setStorageSync('specialRules', {
+        burgerDay: false,
+        coffeeTime: false,
+        eatBetter: false
+      })
+    }
     // 初始化餐厅数据（首次使用本地数据）
     if (!wx.getStorageSync('restaurants')) {
       wx.setStorageSync('restaurants', localRestaurants)

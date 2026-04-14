@@ -222,3 +222,61 @@
   font-size: 24rpx;
   color: #ccc;
 }
+
+/* 菜系权重配置 */
+.cuisine-weight-hint {
+  padding: 16rpx 28rpx 8rpx;
+}
+
+.hint-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.cuisine-weight-item {
+  padding: 16rpx 28rpx;
+}
+
+.cuisine-weight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4rpx;
+}
+
+.cuisine-weight-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.cuisine-weight-value {
+  font-size: 28rpx;
+  color: #FF6B35;
+  font-weight: 600;
+}
+
+/* 特殊规则 */
+.special-rule-item {
+  align-items: flex-start;
+}
+
+.special-rule-info {
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.special-rule-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.special-rule-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.5;
+}
