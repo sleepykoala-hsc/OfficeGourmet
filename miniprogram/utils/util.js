@@ -48,7 +48,7 @@ const getStarStr = (rating) => {
 }
 
 /**
- * 计算餐厅推荐权重
+ * 计算餐厅推荐权重（基础权重，不含菜系加权）
  * 越久没去 → 权重越高；收藏 → 权重×1.5；高评分 → 权重×(rating/5)
  * @param {object} restaurant
  * @param {object} history - {restaurantId: timestamp}
@@ -77,6 +77,7 @@ const calcWeight = (restaurant, history, favorites) => {
  */
 const weightedRandom = (restaurants, weights) => {
   const totalWeight = weights.reduce((sum, w) => sum + w, 0)
+  if (totalWeight <= 0) return restaurants[Math.floor(Math.random() * restaurants.length)]
   let random = Math.random() * totalWeight
   for (let i = 0; i < restaurants.length; i++) {
     random -= weights[i]
@@ -85,38 +86,260 @@ const weightedRandom = (restaurants, weights) => {
   return restaurants[restaurants.length - 1]
 }
 
+// ===== 特殊规则相关工具 =====
+
 /**
- * 推荐一家餐厅
- * @param {object[]} allRestaurants - 全部餐厅
- * @param {string} mealType - 'lunch' | 'dinner' | 'other'
- * @param {string[]} blacklist - 黑名单 id
- * @param {string[]} favorites - 收藏 id
- * @param {object} history - 历史访问 {id: timestamp}
- * @param {object} preferences - 偏好 {favoriteCuisines, maxPrice}
- * @returns {object | null}
+ * 判断当前是否需要排除"排队"tag的店铺
+ * 规则 (1): 周一到周四全天、周五到周日中午，排除"排队"tag
+ * @param {Date} [now] 可选传入时间，默认取当前时间
+ * @returns {boolean}
  */
-const recommend = (allRestaurants, mealType, blacklist, favorites, history, preferences) => {
-  // 过滤黑名单
-  let pool = allRestaurants.filter(r => !blacklist.includes(r.id))
+const shouldExcludeQueue = (now) => {
+  if (!now) now = new Date()
+  const day = now.getDay() // 0=Sun, 1=Mon ... 6=Sat
+  const hour = now.getHours()
+  const isLunch = hour >= 11 && hour <= 14
 
-  // 按用餐时段过滤（如果有对应时段的餐厅）
+  // 周一(1) ~ 周四(4)：全天排除
+  if (day >= 1 && day <= 4) return true
+  // 周五(5) ~ 周日(0, 6)：仅中午排除
+  if (day === 0 || day === 5 || day === 6) return isLunch
+
+  return false
+}
+
+/**
+ * 判断当前是否为 "burger day"（周四）
+ * @param {Date} [now]
+ * @returns {boolean}
+ */
+const isBurgerDay = (now) => {
+  if (!now) now = new Date()
+  return now.getDay() === 4 // 周四
+}
+
+/**
+ * 获取所有可用的菜系类别（从餐厅数据中提取）
+ * @param {object[]} allRestaurants
+ * @returns {string[]}
+ */
+const getAllCuisineTypes = (allRestaurants) => {
+  const types = new Set()
+  allRestaurants.forEach(r => {
+    if (r.category === '餐厅' && r.cuisineType) {
+      types.add(r.cuisineType)
+    }
+  })
+  return [...types]
+}
+
+/**
+ * 获取默认的菜系权重配置
+ * @param {object[]} allRestaurants
+ * @returns {object} { cuisineType: weight(%) }
+ */
+const getDefaultCuisineWeights = (allRestaurants) => {
+  const types = getAllCuisineTypes(allRestaurants)
+  const weights = {}
+  // 默认均匀分配
+  const each = Math.floor(100 / types.length)
+  types.forEach((t, i) => {
+    // 最后一个分配剩余
+    weights[t] = i === types.length - 1 ? 100 - each * (types.length - 1) : each
+  })
+  return weights
+}
+
+/**
+ * 智能推荐（含全部特殊规则）
+ *
+ * 规则优先级（序号小 = 优先级高）：
+ *   (1) 周一~周四全天、周五~周日中午：排除"排队"tag（非强制，可被更高优先级覆盖）
+ *   (2) 下雨天：仅从 tags 含"传媒港"/"宝马"/"网易"的店铺中选（非强制）
+ *   (3) 菜系加权随机
+ *   (4) 特殊规则（需在设置中勾选才生效）:
+ *       [1] burger day  — 周四将西式快餐概率提升到80%
+ *       [2] coffee time — 10%概率额外推荐一家咖啡饮料店
+ *       [3] 吃点好的    — 4%概率无视所有规则，推荐人均>100的店
+ *
+ * @param {object} params
+ * @param {object[]} params.allRestaurants - 全部餐厅（含咖啡饮料店）
+ * @param {string}   params.mealType - 'lunch' | 'dinner' | 'other'
+ * @param {string[]} params.blacklist - 黑名单 id
+ * @param {string[]} params.favorites - 收藏 id
+ * @param {object}   params.history   - 历史访问 {id: timestamp}
+ * @param {object}   params.cuisineWeights - 菜系权重 {cuisineType: percentage}
+ * @param {object}   params.specialRules   - 特殊规则开关 {burgerDay, coffeeTime, eatBetter}
+ * @param {boolean}  params.isRainy        - 当前是否下雨
+ * @param {string}   [params.filterCuisineType] - UI 上选择的菜系过滤
+ * @returns {{restaurant: object|null, coffeeShop: object|null, ruleApplied: string}}
+ */
+const recommend = (params) => {
+  const {
+    allRestaurants,
+    mealType,
+    blacklist = [],
+    favorites = [],
+    history = {},
+    cuisineWeights = {},
+    specialRules = {},
+    isRainy = false,
+    filterCuisineType
+  } = params
+
+  const now = new Date()
+  const result = { restaurant: null, coffeeShop: null, ruleApplied: '' }
+
+  // —— 特殊规则 (4)[3]："吃点好的" ——
+  // 4% 概率无视所有其他规则，推荐人均>100
+  if (specialRules.eatBetter && Math.random() < 0.04) {
+    const expensive = allRestaurants.filter(r =>
+      r.category === '餐厅' &&
+      r.avgPrice > 100 &&
+      !blacklist.includes(r.id)
+    )
+    if (expensive.length > 0) {
+      const weights = expensive.map(r => calcWeight(r, history, favorites))
+      result.restaurant = weightedRandom(expensive, weights)
+      result.ruleApplied = '吃点好的'
+
+      // 即使触发"吃点好的"，coffee time 仍然可以触发
+      if (specialRules.coffeeTime && Math.random() < 0.1) {
+        const coffeeShop = _pickCoffeeShop(allRestaurants, blacklist, history, favorites)
+        if (coffeeShop) result.coffeeShop = coffeeShop
+      }
+      return result
+    }
+    // 如果没有高价店，fallthrough 到正常逻辑
+  }
+
+  // —— 基础池：category="餐厅"，avgPrice <= 100 ——
+  let pool = allRestaurants.filter(r =>
+    r.category === '餐厅' &&
+    r.avgPrice <= 100 &&
+    !blacklist.includes(r.id)
+  )
+
+  // 按用餐时段过滤
   if (mealType === 'lunch' || mealType === 'dinner') {
-    const filtered = pool.filter(r => r.meals.includes(mealType))
+    const filtered = pool.filter(r => r.meals && r.meals.includes(mealType))
     if (filtered.length > 0) pool = filtered
   }
 
-  // 按最大价格过滤
-  if (preferences && preferences.maxPrice) {
-    const filtered = pool.filter(r => r.avgPrice <= preferences.maxPrice)
+  // UI 菜系过滤（用户在首页手动选择的）
+  if (filterCuisineType && filterCuisineType !== '全部') {
+    const filtered = pool.filter(r => r.cuisineType === filterCuisineType)
     if (filtered.length > 0) pool = filtered
   }
 
-  if (pool.length === 0) return null
+  // —— 规则 (1)：排除"排队"tag ——
+  if (shouldExcludeQueue(now)) {
+    const filtered = pool.filter(r => !(r.tags && r.tags.includes('排队')))
+    if (filtered.length > 0) {
+      pool = filtered
+      if (!result.ruleApplied) result.ruleApplied = '避开排队'
+    }
+  }
 
-  // 计算权重
-  const weights = pool.map(r => calcWeight(r, history, favorites))
+  // —— 规则 (2)：下雨天仅推荐"传媒港"/"宝马"/"网易"的店 ——
+  // 优先级高于规则(1)，但规则(1)已经执行过了（它们不冲突，可叠加）
+  if (isRainy) {
+    const indoorTags = ['传媒港', '宝马', '网易']
+    const filtered = pool.filter(r =>
+      r.tags && r.tags.some(t => indoorTags.includes(t))
+    )
+    if (filtered.length > 0) {
+      pool = filtered
+      result.ruleApplied = '雨天室内推荐'
+    }
+  }
 
-  return weightedRandom(pool, weights)
+  if (pool.length === 0) {
+    // 尝试 coffee time 即使没有餐厅可推荐
+    if (specialRules.coffeeTime && Math.random() < 0.1) {
+      result.coffeeShop = _pickCoffeeShop(allRestaurants, blacklist, history, favorites)
+    }
+    return result
+  }
+
+  // —— 规则 (3) + (4)[1]：菜系加权随机 ——
+  const weights = _calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, specialRules, now)
+  result.restaurant = weightedRandom(pool, weights)
+  if (!result.ruleApplied) result.ruleApplied = '正常推荐'
+
+  // —— 规则 (4)[2]："coffee time" ——
+  if (specialRules.coffeeTime && Math.random() < 0.1) {
+    const coffeeShop = _pickCoffeeShop(allRestaurants, blacklist, history, favorites)
+    if (coffeeShop) result.coffeeShop = coffeeShop
+  }
+
+  return result
+}
+
+/**
+ * 计算含菜系权重的最终分数
+ * @private
+ */
+const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, specialRules, now) => {
+  // 获取池中所有菜系
+  const cuisinesInPool = [...new Set(pool.map(r => r.cuisineType))]
+
+  // 构建有效的菜系权重映射
+  let effectiveWeights = { ...cuisineWeights }
+
+  // 规则 (4)[1]: burger day — 周四将西式快餐提升到80%
+  if (specialRules.burgerDay && isBurgerDay(now)) {
+    const fastFoodWeight = 80
+    const remaining = 20
+    const otherCuisines = cuisinesInPool.filter(c => c !== '西式快餐')
+
+    if (otherCuisines.length > 0) {
+      // 将其他菜系的权重按原比例压缩到20%
+      const totalOtherOriginal = otherCuisines.reduce((sum, c) => sum + (effectiveWeights[c] || 10), 0)
+      otherCuisines.forEach(c => {
+        const original = effectiveWeights[c] || 10
+        effectiveWeights[c] = totalOtherOriginal > 0 ? (original / totalOtherOriginal) * remaining : remaining / otherCuisines.length
+      })
+    }
+    effectiveWeights['西式快餐'] = fastFoodWeight
+  }
+
+  // 计算每个菜系在池中的总基础权重
+  const cuisineBaseWeights = {}
+  pool.forEach(r => {
+    const ct = r.cuisineType
+    if (!cuisineBaseWeights[ct]) cuisineBaseWeights[ct] = { totalBase: 0, count: 0 }
+    cuisineBaseWeights[ct].totalBase += calcWeight(r, history, favorites)
+    cuisineBaseWeights[ct].count++
+  })
+
+  // 将菜系配置的百分比权重分配到每家店
+  return pool.map(r => {
+    const ct = r.cuisineType
+    const baseWeight = calcWeight(r, history, favorites)
+    const cuisinePercent = effectiveWeights[ct] || 10 // 默认10%
+    const info = cuisineBaseWeights[ct]
+
+    // 该店的最终权重 = (该店基础权重 / 同菜系总基础权重) × 菜系百分比
+    if (info && info.totalBase > 0) {
+      return (baseWeight / info.totalBase) * cuisinePercent
+    }
+    return baseWeight
+  })
+}
+
+/**
+ * 从咖啡饮料店中随机选择一家
+ * @private
+ */
+const _pickCoffeeShop = (allRestaurants, blacklist, history, favorites) => {
+  const coffeePool = allRestaurants.filter(r =>
+    r.category === '咖啡饮料店' &&
+    !blacklist.includes(r.id)
+  )
+  if (coffeePool.length === 0) return null
+  const weights = coffeePool.map(r => calcWeight(r, history, favorites))
+  return weightedRandom(coffeePool, weights)
 }
 
 /**
@@ -153,5 +376,9 @@ module.exports = {
   weightedRandom,
   recommend,
   formatDistance,
-  formatRelativeTime
+  formatRelativeTime,
+  shouldExcludeQueue,
+  isBurgerDay,
+  getAllCuisineTypes,
+  getDefaultCuisineWeights
 }
