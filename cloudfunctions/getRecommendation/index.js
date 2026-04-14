@@ -127,6 +127,7 @@ function calcWeight(restaurant, history, favorites) {
 }
 
 function weightedRandom(items, weights) {
+  if (items.length === 0) return null
   const total = weights.reduce((s, w) => s + w, 0)
   if (total <= 0) return items[Math.floor(Math.random() * items.length)]
   let r = Math.random() * total

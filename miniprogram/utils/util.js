@@ -1,5 +1,11 @@
 // utils/util.js
 
+// ===== 特殊规则概率常量 =====
+const EAT_BETTER_PROBABILITY = 0.04       // "吃点好的"触发概率 4%
+const COFFEE_TIME_PROBABILITY = 0.1        // "coffee time"触发概率 10%
+const BURGER_DAY_FAST_FOOD_WEIGHT = 80     // "burger day"西式快餐权重 80%
+const BURGER_DAY_OTHER_WEIGHT = 20         // "burger day"其他菜系权重 20%
+
 /**
  * 格式化时间
  */
@@ -76,6 +82,7 @@ const calcWeight = (restaurant, history, favorites) => {
  * @returns {object}
  */
 const weightedRandom = (restaurants, weights) => {
+  if (restaurants.length === 0) return null
   const totalWeight = weights.reduce((sum, w) => sum + w, 0)
   if (totalWeight <= 0) return restaurants[Math.floor(Math.random() * restaurants.length)]
   let random = Math.random() * totalWeight
@@ -191,8 +198,7 @@ const recommend = (params) => {
   const result = { restaurant: null, coffeeShop: null, ruleApplied: '' }
 
   // —— 特殊规则 (4)[3]："吃点好的" ——
-  // 4% 概率无视所有其他规则，推荐人均>100
-  if (specialRules.eatBetter && Math.random() < 0.04) {
+  if (specialRules.eatBetter && Math.random() < EAT_BETTER_PROBABILITY) {
     const expensive = allRestaurants.filter(r =>
       r.category === '餐厅' &&
       r.avgPrice > 100 &&
@@ -204,10 +210,7 @@ const recommend = (params) => {
       result.ruleApplied = '吃点好的'
 
       // 即使触发"吃点好的"，coffee time 仍然可以触发
-      if (specialRules.coffeeTime && Math.random() < 0.1) {
-        const coffeeShop = _pickCoffeeShop(allRestaurants, blacklist, history, favorites)
-        if (coffeeShop) result.coffeeShop = coffeeShop
-      }
+      _tryCoffeeTime(result, allRestaurants, blacklist, history, favorites, specialRules)
       return result
     }
     // 如果没有高价店，fallthrough 到正常逻辑
@@ -255,10 +258,7 @@ const recommend = (params) => {
   }
 
   if (pool.length === 0) {
-    // 尝试 coffee time 即使没有餐厅可推荐
-    if (specialRules.coffeeTime && Math.random() < 0.1) {
-      result.coffeeShop = _pickCoffeeShop(allRestaurants, blacklist, history, favorites)
-    }
+    _tryCoffeeTime(result, allRestaurants, blacklist, history, favorites, specialRules)
     return result
   }
 
@@ -268,12 +268,20 @@ const recommend = (params) => {
   if (!result.ruleApplied) result.ruleApplied = '正常推荐'
 
   // —— 规则 (4)[2]："coffee time" ——
-  if (specialRules.coffeeTime && Math.random() < 0.1) {
+  _tryCoffeeTime(result, allRestaurants, blacklist, history, favorites, specialRules)
+
+  return result
+}
+
+/**
+ * 尝试触发 coffee time（提取为公共逻辑避免重复）
+ * @private
+ */
+const _tryCoffeeTime = (result, allRestaurants, blacklist, history, favorites, specialRules) => {
+  if (specialRules.coffeeTime && Math.random() < COFFEE_TIME_PROBABILITY) {
     const coffeeShop = _pickCoffeeShop(allRestaurants, blacklist, history, favorites)
     if (coffeeShop) result.coffeeShop = coffeeShop
   }
-
-  return result
 }
 
 /**
@@ -289,19 +297,18 @@ const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, sp
 
   // 规则 (4)[1]: burger day — 周四将西式快餐提升到80%
   if (specialRules.burgerDay && isBurgerDay(now)) {
-    const fastFoodWeight = 80
-    const remaining = 20
     const otherCuisines = cuisinesInPool.filter(c => c !== '西式快餐')
 
     if (otherCuisines.length > 0) {
-      // 将其他菜系的权重按原比例压缩到20%
       const totalOtherOriginal = otherCuisines.reduce((sum, c) => sum + (effectiveWeights[c] || 10), 0)
       otherCuisines.forEach(c => {
         const original = effectiveWeights[c] || 10
-        effectiveWeights[c] = totalOtherOriginal > 0 ? (original / totalOtherOriginal) * remaining : remaining / otherCuisines.length
+        effectiveWeights[c] = totalOtherOriginal > 0
+          ? (original / totalOtherOriginal) * BURGER_DAY_OTHER_WEIGHT
+          : BURGER_DAY_OTHER_WEIGHT / otherCuisines.length
       })
     }
-    effectiveWeights['西式快餐'] = fastFoodWeight
+    effectiveWeights['西式快餐'] = BURGER_DAY_FAST_FOOD_WEIGHT
   }
 
   // 计算每个菜系在池中的总基础权重

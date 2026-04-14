@@ -158,7 +158,7 @@
     <view class="settings-item special-rule-item">
       <view class="special-rule-info">
         <text class="special-rule-name">✨ 吃点好的</text>
-        <text class="special-rule-desc">4% 概率无视其他规则，推荐人均 &gt; ¥100 的店铺</text>
+        <text class="special-rule-desc">4% 概率无视其他规则，推荐人均 > ¥100 的店铺</text>
       </view>
       <switch
         checked="{{specialRules.eatBetter}}"
