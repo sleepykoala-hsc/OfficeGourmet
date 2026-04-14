@@ -194,7 +194,7 @@ def parse_poi(poi: dict) -> dict:
         "longitude": lng,
         "isActive": True,
         # 大众点评补全字段（初始为空，由 enrich_with_dianping 填充）
-        "dpRating": 0,
+        "dpRating": 0.0,  # 大众点评评分，保留一位小数
         "dpReviewCount": 0,
         "recommendDishes": [],
         "hasDeal": False,
