@@ -188,11 +188,11 @@ const getDefaultCuisineWeights = (allRestaurants) => {
  *   (3) 菜系加权随机
  *   (4) 特殊规则（需在设置中勾选才生效）:
  *       [1] burger day  — 周四将快餐概率提升到80%
- *       [2] coffee time — 10%概率额外推荐一家咖啡饮料店
+ *       [2] coffee time — 10%概率额外推荐一家饮料店
  *       [3] 吃点好的    — 4%概率无视所有规则，推荐人均>100的店
  *
  * @param {object} params
- * @param {object[]} params.allRestaurants - 全部餐厅（含咖啡饮料店）
+ * @param {object[]} params.allRestaurants - 全部餐厅（含饮料店）
  * @param {string}   params.mealType - 'lunch' | 'dinner' | 'other'
  * @param {string[]} params.blacklist - 黑名单 id
  * @param {string[]} params.favorites - 收藏 id
@@ -358,7 +358,7 @@ const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, sp
 }
 
 /**
- * 从咖啡饮料店中随机选择一家
+ * 从饮料店中随机选择一家
  * @private
  */
 const _pickCoffeeShop = (allRestaurants, blacklist, history, favorites) => {
