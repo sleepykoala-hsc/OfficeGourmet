@@ -36,8 +36,32 @@ App({
         mealTypes: ['lunch', 'dinner']
       })
     }
-    // 初始化餐厅数据（首次使用本地数据）
-    if (!wx.getStorageSync('restaurants')) {
+    // 初始化菜系权重（空对象表示稍后由 profile 页用 getDefaultCuisineWeights 初始化）
+    if (!wx.getStorageSync('cuisineWeights')) {
+      wx.setStorageSync('cuisineWeights', {})
+    }
+    // 初始化特殊规则开关
+    if (!wx.getStorageSync('specialRules')) {
+      wx.setStorageSync('specialRules', {
+        burgerDay: false,
+        coffeeTime: false,
+        eatBetter: false
+      })
+    }
+
+    // 数据版本检查 —— 当餐厅数据结构变更时递增此值以触发刷新
+    // v2: category 字段从菜系名改为 "餐厅"/"咖啡饮料店"，新增 cuisineType 字段
+    // v3: cuisineType 改为 7 类：食堂/面食/广式/台式/日式/快餐/其他
+    // v4: 去掉 cuisineType 字段，category 直接表示菜系分类；饮料店 category="饮料"；phone 改为数组
+    const DATA_VERSION = 4
+    const currentVersion = wx.getStorageSync('dataVersion')
+    if (currentVersion !== DATA_VERSION) {
+      wx.setStorageSync('restaurants', localRestaurants)
+      wx.setStorageSync('dataVersion', DATA_VERSION)
+      // 菜系权重需要重置，因为菜系分类可能已变化
+      wx.setStorageSync('cuisineWeights', {})
+    } else if (!wx.getStorageSync('restaurants')) {
+      // 首次使用，写入本地数据
       wx.setStorageSync('restaurants', localRestaurants)
     }
   },

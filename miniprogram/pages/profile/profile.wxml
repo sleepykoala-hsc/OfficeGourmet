@@ -80,12 +80,111 @@
     </view>
     <view class="cuisine-tags">
       <view
-        wx:for="{{allCuisines}}"
+        wx:for="{{allCuisineTypes}}"
         wx:key="*this"
         class="cuisine-tag {{preferences.favoriteCuisines.includes(item) ? 'cuisine-tag-active' : ''}}"
         bindtap="toggleCuisine"
         data-cuisine="{{item}}"
       >{{item}}</view>
+    </view>
+  </view>
+
+  <!-- 菜系概率配置 — 多段条形滑块 -->
+  <view class="section-header">
+    <text class="section-label">菜系随机概率</text>
+    <text class="section-clear" bindtap="resetCuisineWeights">重置</text>
+  </view>
+  <view class="settings-card card">
+    <view class="cuisine-weight-hint">
+      <text class="hint-text">拖动圆点调整各菜系被推荐的概率</text>
+    </view>
+
+    <!-- 多段条形滑块 -->
+    <view class="multi-slider-wrap">
+      <view
+        class="slider-track"
+        id="sliderTrack"
+        bindtouchstart="onSliderTouchStart"
+        bindtouchmove="onSliderTouchMove"
+        bindtouchend="onSliderTouchEnd"
+      >
+        <!-- 彩色分段 -->
+        <view
+          wx:for="{{cuisineSegments}}"
+          wx:key="name"
+          class="slider-segment segment-{{index}}"
+          style="width: {{item.percent}}%; background-color: {{item.color}};"
+        ></view>
+        <!-- 分隔圆点 -->
+        <view
+          wx:for="{{dividers}}"
+          wx:key="index"
+          class="slider-thumb"
+          style="left: {{item}}%;"
+        ></view>
+      </view>
+    </view>
+
+    <!-- 图例 -->
+    <view class="slider-legend">
+      <view
+        wx:for="{{cuisineSegments}}"
+        wx:key="name"
+        class="legend-item"
+      >
+        <view class="legend-dot" style="background-color: {{item.color}};"></view>
+        <text class="legend-name">{{item.name}}</text>
+        <text class="legend-pct">{{item.percent}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 特殊规则 -->
+  <view class="section-header">
+    <text class="section-label">🎯 特殊规则</text>
+  </view>
+  <view class="settings-card card">
+    <!-- Burger Day -->
+    <view class="settings-item special-rule-item">
+      <view class="special-rule-info">
+        <text class="special-rule-name">🍔 Burger Day</text>
+        <text class="special-rule-desc">每周四将快餐随机概率提升到 80%</text>
+      </view>
+      <switch
+        checked="{{specialRules.burgerDay}}"
+        color="#FF6B35"
+        bindchange="toggleBurgerDay"
+      />
+    </view>
+
+    <view class="divider"></view>
+
+    <!-- Coffee Time -->
+    <view class="settings-item special-rule-item">
+      <view class="special-rule-info">
+        <text class="special-rule-name">☕ Coffee Time</text>
+        <text class="special-rule-desc">10% 概率额外推荐一家饮料店</text>
+      </view>
+      <switch
+        checked="{{specialRules.coffeeTime}}"
+        color="#FF6B35"
+        bindchange="toggleCoffeeTime"
+      />
+    </view>
+
+    <view class="divider"></view>
+
+    <!-- 吃点好的 -->
+    <view class="settings-item special-rule-item">
+      <view class="special-rule-info">
+        <text class="special-rule-name">✨ 吃点好的</text>
+        <text class="special-rule-desc">4% 概率无视其他规则，推荐人均 > ¥100 的店铺</text>
+      </view>
+      <switch
+        checked="{{specialRules.eatBetter}}"
+        color="#FF6B35"
+        bindchange="toggleEatBetter"
+      />
     </view>
   </view>
 

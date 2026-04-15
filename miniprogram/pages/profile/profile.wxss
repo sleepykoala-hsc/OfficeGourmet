@@ -222,3 +222,108 @@
   font-size: 24rpx;
   color: #ccc;
 }
+
+/* 菜系概率 — 多段条形滑块 */
+.cuisine-weight-hint {
+  padding: 16rpx 28rpx 8rpx;
+}
+
+.hint-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.multi-slider-wrap {
+  padding: 32rpx 28rpx 16rpx;
+}
+
+.slider-track {
+  position: relative;
+  display: flex;
+  height: 48rpx;
+  border-radius: 24rpx;
+  overflow: visible;
+}
+
+.slider-segment {
+  height: 100%;
+  min-width: 4rpx;
+  transition: width 0.05s ease;
+}
+
+.slider-segment.segment-0 {
+  border-radius: 24rpx 0 0 24rpx;
+}
+
+.slider-segment:last-child {
+  border-radius: 0 24rpx 24rpx 0;
+}
+
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: #fff;
+  border: 4rpx solid #666;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.slider-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx 24rpx;
+  padding: 16rpx 28rpx 24rpx;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.legend-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  font-size: 24rpx;
+  color: #333;
+}
+
+.legend-pct {
+  font-size: 24rpx;
+  color: #FF6B35;
+  font-weight: 600;
+}
+
+/* 特殊规则 */
+.special-rule-item {
+  align-items: flex-start;
+}
+
+.special-rule-info {
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.special-rule-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.special-rule-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.5;
+}
