@@ -53,7 +53,8 @@ App({
     // v2: category 字段从菜系名改为 "餐厅"/"咖啡饮料店"，新增 cuisineType 字段
     // v3: cuisineType 改为 7 类：食堂/面食/广式/台式/日式/快餐/其他
     // v4: 去掉 cuisineType 字段，category 直接表示菜系分类；饮料店 category="饮料"；phone 改为数组
-    const DATA_VERSION = 4
+    // v5: 菜系分类改为通过 cuisine 字段关键字匹配（如"广式简餐"→广式），未匹配则归为"其他"
+    const DATA_VERSION = 5
     const currentVersion = wx.getStorageSync('dataVersion')
     if (currentVersion !== DATA_VERSION) {
       wx.setStorageSync('restaurants', localRestaurants)

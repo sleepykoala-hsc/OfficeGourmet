@@ -12,6 +12,7 @@ const db = cloud.database()
 
 const FOOD_CATEGORIES = ['食堂', '面食', '广式', '台式', '日式', '快餐', '其他']
 const DRINK_CATEGORY = '饮料'
+const CUISINE_KEYWORDS = ['食堂', '面食', '广式', '台式', '日式', '快餐']
 
 function isFood(r) {
   return FOOD_CATEGORIES.includes(r.category)
@@ -19,6 +20,15 @@ function isFood(r) {
 
 function isDrinkShop(r) {
   return r.category === DRINK_CATEGORY
+}
+
+function getCuisineCategory(r) {
+  if (r.category === DRINK_CATEGORY) return DRINK_CATEGORY
+  const cuisine = r.cuisine || ''
+  for (const keyword of CUISINE_KEYWORDS) {
+    if (cuisine.includes(keyword)) return keyword
+  }
+  return '其他'
 }
 
 exports.main = async (event, context) => {
@@ -76,7 +86,7 @@ exports.main = async (event, context) => {
 
     // UI 菜系过滤
     if (filterCuisineType && filterCuisineType !== '全部') {
-      const filtered = pool.filter(r => r.category === filterCuisineType)
+      const filtered = pool.filter(r => getCuisineCategory(r) === filterCuisineType)
       if (filtered.length > 0) pool = filtered
     }
 
@@ -159,7 +169,7 @@ function shouldExcludeQueue(now) {
 }
 
 function calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, specialRules, now) {
-  const cuisinesInPool = [...new Set(pool.map(r => r.category))]
+  const cuisinesInPool = [...new Set(pool.map(r => getCuisineCategory(r)))]
   let effectiveWeights = { ...cuisineWeights }
 
   // Burger Day: 周四将快餐提升到80%
@@ -178,14 +188,14 @@ function calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, spe
 
   const cuisineBaseWeights = {}
   pool.forEach(r => {
-    const ct = r.category
+    const ct = getCuisineCategory(r)
     if (!cuisineBaseWeights[ct]) cuisineBaseWeights[ct] = { totalBase: 0, count: 0 }
     cuisineBaseWeights[ct].totalBase += calcWeight(r, history, favorites)
     cuisineBaseWeights[ct].count++
   })
 
   return pool.map(r => {
-    const ct = r.category
+    const ct = getCuisineCategory(r)
     const baseWeight = calcWeight(r, history, favorites)
     const cuisinePercent = effectiveWeights[ct] || 10
     const info = cuisineBaseWeights[ct]

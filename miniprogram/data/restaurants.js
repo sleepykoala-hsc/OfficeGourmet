@@ -1,7 +1,7 @@
 // data/restaurants.js
 // 示例餐厅数据（由爬虫抓取后导入，或手动维护）
-// category: 菜系分类（食堂/面食/广式/台式/日式/快餐/其他/饮料）
-// cuisine: 更细分的餐饮类型
+// category: 店铺类型（食堂/面食/广式/台式/日式/快餐/其他/饮料）
+// cuisine: 更细分的餐饮类型，菜系分类通过 cuisine 字段关键字匹配（如"广式简餐"→广式）
 const restaurants = [
   {
     id: 'R001',

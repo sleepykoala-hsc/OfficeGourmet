@@ -1,5 +1,6 @@
 // pages/list/list.js
 const { restaurants: localRestaurants } = require('../../data/restaurants')
+const { getCuisineCategory } = require('../../utils/util')
 
 const CATEGORIES = ['全部', '食堂', '面食', '广式', '台式', '日式', '快餐', '其他', '饮料']
 const SORT_OPTIONS = [
@@ -91,9 +92,9 @@ Page({
       )
     }
 
-    // 分类过滤
+    // 分类过滤（通过 cuisine 字段关键字匹配菜系分类）
     if (activeCategory && activeCategory !== '全部') {
-      result = result.filter(r => r.category === activeCategory)
+      result = result.filter(r => getCuisineCategory(r) === activeCategory)
     }
 
     // 排序
