@@ -51,7 +51,8 @@ App({
 
     // 数据版本检查 —— 当餐厅数据结构变更时递增此值以触发刷新
     // v2: category 字段从菜系名改为 "餐厅"/"咖啡饮料店"，新增 cuisineType 字段
-    const DATA_VERSION = 2
+    // v3: cuisineType 改为 7 类：食堂/面食/广式/台式/日式/快餐/其他
+    const DATA_VERSION = 3
     const currentVersion = wx.getStorageSync('dataVersion')
     if (currentVersion !== DATA_VERSION) {
       wx.setStorageSync('restaurants', localRestaurants)

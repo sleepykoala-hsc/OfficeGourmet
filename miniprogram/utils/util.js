@@ -3,7 +3,7 @@
 // ===== 特殊规则概率常量 =====
 const EAT_BETTER_PROBABILITY = 0.04       // "吃点好的"触发概率 4%
 const COFFEE_TIME_PROBABILITY = 0.1        // "coffee time"触发概率 10%
-const BURGER_DAY_FAST_FOOD_WEIGHT = 80     // "burger day"西式快餐权重 80%
+const BURGER_DAY_FAST_FOOD_WEIGHT = 80     // "burger day"快餐权重 80%
 const BURGER_DAY_OTHER_WEIGHT = 20         // "burger day"其他菜系权重 20%
 
 /**
@@ -295,9 +295,9 @@ const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, sp
   // 构建有效的菜系权重映射
   let effectiveWeights = { ...cuisineWeights }
 
-  // 规则 (4)[1]: burger day — 周四将西式快餐提升到80%
+  // 规则 (4)[1]: burger day — 周四将快餐提升到80%
   if (specialRules.burgerDay && isBurgerDay(now)) {
-    const otherCuisines = cuisinesInPool.filter(c => c !== '西式快餐')
+    const otherCuisines = cuisinesInPool.filter(c => c !== '快餐')
 
     if (otherCuisines.length > 0) {
       const totalOtherOriginal = otherCuisines.reduce((sum, c) => sum + (effectiveWeights[c] || 10), 0)
@@ -308,7 +308,7 @@ const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, sp
           : BURGER_DAY_OTHER_WEIGHT / otherCuisines.length
       })
     }
-    effectiveWeights['西式快餐'] = BURGER_DAY_FAST_FOOD_WEIGHT
+    effectiveWeights['快餐'] = BURGER_DAY_FAST_FOOD_WEIGHT
   }
 
   // 计算每个菜系在池中的总基础权重

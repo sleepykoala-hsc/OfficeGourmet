@@ -151,10 +151,10 @@ function calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, spe
   const cuisinesInPool = [...new Set(pool.map(r => r.cuisineType))]
   let effectiveWeights = { ...cuisineWeights }
 
-  // Burger Day: 周四将西式快餐提升到80%
+  // Burger Day: 周四将快餐提升到80%
   if (specialRules.burgerDay && now.getDay() === 4) {
     const remaining = 20
-    const otherCuisines = cuisinesInPool.filter(c => c !== '西式快餐')
+    const otherCuisines = cuisinesInPool.filter(c => c !== '快餐')
     if (otherCuisines.length > 0) {
       const totalOther = otherCuisines.reduce((sum, c) => sum + (effectiveWeights[c] || 10), 0)
       otherCuisines.forEach(c => {
@@ -162,7 +162,7 @@ function calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, spe
         effectiveWeights[c] = totalOther > 0 ? (orig / totalOther) * remaining : remaining / otherCuisines.length
       })
     }
-    effectiveWeights['西式快餐'] = 80
+    effectiveWeights['快餐'] = 80
   }
 
   const cuisineBaseWeights = {}

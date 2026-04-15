@@ -89,33 +89,53 @@
     </view>
   </view>
 
-  <!-- 菜系概率配置 -->
+  <!-- 菜系概率配置 — 多段条形滑块 -->
   <view class="section-header">
     <text class="section-label">菜系随机概率</text>
     <text class="section-clear" bindtap="resetCuisineWeights">重置</text>
   </view>
   <view class="settings-card card">
     <view class="cuisine-weight-hint">
-      <text class="hint-text">调整每个菜系被随机到的概率（%），数值越高越容易被推荐</text>
+      <text class="hint-text">拖动圆点调整各菜系被推荐的概率</text>
     </view>
-    <view
-      wx:for="{{allCuisineTypes}}"
-      wx:key="*this"
-      class="cuisine-weight-item"
-    >
-      <view class="cuisine-weight-header">
-        <text class="cuisine-weight-name">{{item}}</text>
-        <text class="cuisine-weight-value">{{cuisineWeights[item] || 0}}%</text>
+
+    <!-- 多段条形滑块 -->
+    <view class="multi-slider-wrap">
+      <view
+        class="slider-track"
+        id="sliderTrack"
+        bindtouchstart="onSliderTouchStart"
+        bindtouchmove="onSliderTouchMove"
+        bindtouchend="onSliderTouchEnd"
+      >
+        <!-- 彩色分段 -->
+        <view
+          wx:for="{{cuisineSegments}}"
+          wx:key="name"
+          class="slider-segment segment-{{index}}"
+          style="width: {{item.percent}}%; background-color: {{item.color}};"
+        ></view>
+        <!-- 分隔圆点 -->
+        <view
+          wx:for="{{dividers}}"
+          wx:key="index"
+          class="slider-thumb"
+          style="left: {{item}}%;"
+        ></view>
       </view>
-      <slider
-        min="0"
-        max="100"
-        step="1"
-        value="{{cuisineWeights[item] || 0}}"
-        activeColor="#FF6B35"
-        data-cuisine="{{item}}"
-        bindchange="onCuisineWeightChange"
-      />
+    </view>
+
+    <!-- 图例 -->
+    <view class="slider-legend">
+      <view
+        wx:for="{{cuisineSegments}}"
+        wx:key="name"
+        class="legend-item"
+      >
+        <view class="legend-dot" style="background-color: {{item.color}};"></view>
+        <text class="legend-name">{{item.name}}</text>
+        <text class="legend-pct">{{item.percent}}%</text>
+      </view>
     </view>
   </view>
 
@@ -128,7 +148,7 @@
     <view class="settings-item special-rule-item">
       <view class="special-rule-info">
         <text class="special-rule-name">🍔 Burger Day</text>
-        <text class="special-rule-desc">每周四将西式快餐随机概率提升到 80%</text>
+        <text class="special-rule-desc">每周四将快餐随机概率提升到 80%</text>
       </view>
       <switch
         checked="{{specialRules.burgerDay}}"
