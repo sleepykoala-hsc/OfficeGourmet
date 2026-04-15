@@ -48,8 +48,18 @@ App({
         eatBetter: false
       })
     }
-    // 初始化餐厅数据（首次使用本地数据）
-    if (!wx.getStorageSync('restaurants')) {
+
+    // 数据版本检查 —— 当餐厅数据结构变更时递增此值以触发刷新
+    // v2: category 字段从菜系名改为 "餐厅"/"咖啡饮料店"，新增 cuisineType 字段
+    const DATA_VERSION = 2
+    const currentVersion = wx.getStorageSync('dataVersion')
+    if (currentVersion !== DATA_VERSION) {
+      wx.setStorageSync('restaurants', localRestaurants)
+      wx.setStorageSync('dataVersion', DATA_VERSION)
+      // 菜系权重需要重置，因为菜系分类可能已变化
+      wx.setStorageSync('cuisineWeights', {})
+    } else if (!wx.getStorageSync('restaurants')) {
+      // 首次使用，写入本地数据
       wx.setStorageSync('restaurants', localRestaurants)
     }
   },
