@@ -1,13 +1,12 @@
 // data/restaurants.js
 // 示例餐厅数据（由爬虫抓取后导入，或手动维护）
-// category: "餐厅" | "咖啡饮料店"  —— 店铺大类
-// cuisineType: 菜系分类（食堂、面食、广式、台式、日式、快餐、其他）
+// category: 菜系分类（食堂/面食/广式/台式/日式/快餐/其他/饮料）
+// cuisine: 更细分的餐饮类型
 const restaurants = [
   {
     id: 'R001',
     name: '老刘麻辣烫',
-    category: '餐厅',
-    cuisineType: '食堂',
+    category: '食堂',
     cuisine: '麻辣烫',
     priceLevel: 2,
     avgPrice: 22,
@@ -17,16 +16,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 80,
     address: '传媒港B1-103',
-    phone: '',
+    phone: [],
     openHours: '10:00-21:00',
     description: '食材新鲜，汤底浓郁，自选菜品随意搭配，一份下来吃得饱',
-    emoji: '🌶️'
+    emoji: '🌶️',
+    isActive: true
   },
   {
     id: 'R002',
     name: '黄焖鸡米饭',
-    category: '餐厅',
-    cuisineType: '食堂',
+    category: '食堂',
     cuisine: '盖饭',
     priceLevel: 1,
     avgPrice: 18,
@@ -36,16 +35,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 50,
     address: '宝马大厦一楼大堂旁',
-    phone: '',
+    phone: [],
     openHours: '10:30-21:00',
     description: '香喷喷的黄焖鸡，肉质嫩滑，酱汁拌饭一绝',
-    emoji: '🍗'
+    emoji: '🍗',
+    isActive: true
   },
   {
     id: 'R003',
     name: '沙县小吃',
-    category: '餐厅',
-    cuisineType: '食堂',
+    category: '食堂',
     cuisine: '小吃',
     priceLevel: 1,
     avgPrice: 15,
@@ -55,16 +54,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 120,
     address: '公司对面小街 3 号',
-    phone: '',
+    phone: [],
     openHours: '07:00-20:30',
     description: '国民小吃，蒸饺、拌面、卤味，经济实惠',
-    emoji: '🥟'
+    emoji: '🥟',
+    isActive: true
   },
   {
     id: 'R004',
     name: '兰州正宗拉面',
-    category: '餐厅',
-    cuisineType: '面食',
+    category: '面食',
     cuisine: '面食',
     priceLevel: 1,
     avgPrice: 18,
@@ -74,16 +73,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 200,
     address: '网易大厦 B1',
-    phone: '',
+    phone: [],
     openHours: '07:00-21:00',
     description: '一清二白三红四绿五黄，正宗西北拉面口感劲道',
-    emoji: '🍜'
+    emoji: '🍜',
+    isActive: true
   },
   {
     id: 'R005',
     name: '肯德基',
-    category: '餐厅',
-    cuisineType: '快餐',
+    category: '快餐',
     cuisine: '西式快餐',
     priceLevel: 2,
     avgPrice: 32,
@@ -93,16 +92,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 300,
     address: '传媒港商业广场 1 楼',
-    phone: '',
+    phone: [],
     openHours: '09:00-22:00',
     description: '国际连锁快餐，炸鸡汉堡，套餐划算，可手机点餐',
-    emoji: '🍔'
+    emoji: '🍔',
+    isActive: true
   },
   {
     id: 'R006',
     name: '麦当劳',
-    category: '餐厅',
-    cuisineType: '快餐',
+    category: '快餐',
     cuisine: '西式快餐',
     priceLevel: 2,
     avgPrice: 30,
@@ -112,16 +111,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 350,
     address: '宝马大厦商业广场 1 楼',
-    phone: '',
+    phone: [],
     openHours: '06:00-23:00',
     description: '经典汉堡薯条，早午晚餐都有，会员积分优惠多',
-    emoji: '🍟'
+    emoji: '🍟',
+    isActive: true
   },
   {
     id: 'R007',
     name: '赛百味',
-    category: '餐厅',
-    cuisineType: '快餐',
+    category: '快餐',
     cuisine: '三明治',
     priceLevel: 2,
     avgPrice: 35,
@@ -131,16 +130,16 @@ const restaurants = [
     meals: ['lunch'],
     distance: 400,
     address: '写字楼北门对面',
-    phone: '',
+    phone: [],
     openHours: '10:00-21:00',
     description: '自选搭配的健康三明治，蔬菜丰富，适合轻食午餐',
-    emoji: '🥪'
+    emoji: '🥪',
+    isActive: true
   },
   {
     id: 'R008',
     name: '一风堂拉面',
-    category: '餐厅',
-    cuisineType: '日式',
+    category: '日式',
     cuisine: '拉面',
     priceLevel: 3,
     avgPrice: 58,
@@ -150,16 +149,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 600,
     address: '时尚中心 2 楼',
-    phone: '',
+    phone: [],
     openHours: '11:00-21:30',
     description: '日式豚骨拉面，浓郁汤底，叉烧鲜嫩，环境舒适',
-    emoji: '🍥'
+    emoji: '🍥',
+    isActive: true
   },
   {
     id: 'R009',
     name: '鱼米寿司',
-    category: '餐厅',
-    cuisineType: '日式',
+    category: '日式',
     cuisine: '寿司',
     priceLevel: 3,
     avgPrice: 45,
@@ -169,16 +168,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 500,
     address: '网易大厦 1 楼',
-    phone: '',
+    phone: [],
     openHours: '11:00-22:00',
     description: '新鲜食材制作的日式寿司，口感清爽，种类丰富',
-    emoji: '🍣'
+    emoji: '🍣',
+    isActive: true
   },
   {
     id: 'R010',
     name: '韩记烤肉',
-    category: '餐厅',
-    cuisineType: '其他',
+    category: '其他',
     cuisine: '烤肉',
     priceLevel: 4,
     avgPrice: 75,
@@ -188,16 +187,16 @@ const restaurants = [
     meals: ['dinner'],
     distance: 700,
     address: '美食城 B 区 22 号',
-    phone: '',
+    phone: [],
     openHours: '11:30-22:30',
     description: '正宗韩式碳烤，小菜丰富，五花肉香嫩，晚餐聚餐首选',
-    emoji: '🥩'
+    emoji: '🥩',
+    isActive: true
   },
   {
     id: 'R011',
     name: '港式茶餐厅',
-    category: '餐厅',
-    cuisineType: '广式',
+    category: '广式',
     cuisine: '茶餐厅',
     priceLevel: 2,
     avgPrice: 38,
@@ -207,16 +206,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 450,
     address: '传媒港文化路 88 号',
-    phone: '',
+    phone: [],
     openHours: '09:00-21:00',
     description: '正宗港式茶餐厅，丝滑奶茶，菠萝包，叉烧饭样样出色',
-    emoji: '🧋'
+    emoji: '🧋',
+    isActive: true
   },
   {
     id: 'R012',
     name: '天府川菜馆',
-    category: '餐厅',
-    cuisineType: '食堂',
+    category: '食堂',
     cuisine: '川菜',
     priceLevel: 2,
     avgPrice: 42,
@@ -226,16 +225,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 280,
     address: '公司西侧 150 米',
-    phone: '',
+    phone: [],
     openHours: '10:30-21:30',
     description: '正宗四川风味，麻辣鲜香，水煮鱼、夫妻肺片必点',
-    emoji: '🌶️'
+    emoji: '🌶️',
+    isActive: true
   },
   {
     id: 'R013',
     name: '台湾卤肉饭',
-    category: '餐厅',
-    cuisineType: '台式',
+    category: '台式',
     cuisine: '卤肉饭',
     priceLevel: 1,
     avgPrice: 25,
@@ -245,16 +244,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 180,
     address: '宝马大厦创业路 15 号',
-    phone: '',
+    phone: [],
     openHours: '10:00-20:30',
     description: '台湾风味卤肉饭，卤汁香浓，配上卤蛋和青菜，满满幸福感',
-    emoji: '🍚'
+    emoji: '🍚',
+    isActive: true
   },
   {
     id: 'R014',
     name: '越南米粉',
-    category: '餐厅',
-    cuisineType: '其他',
+    category: '其他',
     cuisine: '米粉',
     priceLevel: 2,
     avgPrice: 28,
@@ -264,16 +263,16 @@ const restaurants = [
     meals: ['lunch'],
     distance: 380,
     address: '科技路 37 号',
-    phone: '',
+    phone: [],
     openHours: '11:00-21:00',
     description: '越南风味河粉，清爽汤底，搭配柠檬和薄荷，夏天必吃',
-    emoji: '🍝'
+    emoji: '🍝',
+    isActive: true
   },
   {
     id: 'R015',
     name: '湘菜馆',
-    category: '餐厅',
-    cuisineType: '食堂',
+    category: '食堂',
     cuisine: '湘菜',
     priceLevel: 2,
     avgPrice: 40,
@@ -283,16 +282,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 320,
     address: '民主路 66 号',
-    phone: '',
+    phone: [],
     openHours: '11:00-21:00',
     description: '正宗湖南口味，剁椒鱼头超级辣爽，炒肉馆子料足味美',
-    emoji: '🐟'
+    emoji: '🐟',
+    isActive: true
   },
   {
     id: 'R016',
     name: '意面工坊',
-    category: '餐厅',
-    cuisineType: '其他',
+    category: '其他',
     cuisine: '意大利面',
     priceLevel: 3,
     avgPrice: 55,
@@ -302,16 +301,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 800,
     address: '时尚中心 3 楼',
-    phone: '',
+    phone: [],
     openHours: '11:00-22:00',
     description: '手工意大利面，经典卡邦尼和肉酱面，地道西欧风味',
-    emoji: '🍝'
+    emoji: '🍝',
+    isActive: true
   },
   {
     id: 'R017',
     name: '全素斋',
-    category: '餐厅',
-    cuisineType: '其他',
+    category: '其他',
     cuisine: '素食',
     priceLevel: 2,
     avgPrice: 30,
@@ -321,16 +320,16 @@ const restaurants = [
     meals: ['lunch'],
     distance: 420,
     address: '网易大厦旁禅意路 8 号',
-    phone: '',
+    phone: [],
     openHours: '11:00-14:00',
     description: '纯素食自助餐，品种丰富，健康低脂，适合养生减脂',
-    emoji: '🥗'
+    emoji: '🥗',
+    isActive: true
   },
   {
     id: 'R018',
     name: '煲仔饭专门店',
-    category: '餐厅',
-    cuisineType: '广式',
+    category: '广式',
     cuisine: '煲仔饭',
     priceLevel: 2,
     avgPrice: 35,
@@ -340,16 +339,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 250,
     address: '传媒港创业路 28 号',
-    phone: '',
+    phone: [],
     openHours: '11:00-21:30',
     description: '瓦锅煲仔饭，底层焦香锅巴，腊肠排骨鸡腿多种选择',
-    emoji: '🍲'
+    emoji: '🍲',
+    isActive: true
   },
   {
     id: 'R019',
     name: '云贵土司火锅',
-    category: '餐厅',
-    cuisineType: '食堂',
+    category: '食堂',
     cuisine: '火锅',
     priceLevel: 3,
     avgPrice: 60,
@@ -359,16 +358,16 @@ const restaurants = [
     meals: ['dinner'],
     distance: 650,
     address: '美食城 A 区 5 号',
-    phone: '',
+    phone: [],
     openHours: '11:00-23:00',
     description: '正宗重庆牛油火锅，食材新鲜，鸳鸯锅底可选，涮什么都香',
-    emoji: '🫕'
+    emoji: '🫕',
+    isActive: true
   },
   {
     id: 'R020',
     name: '新疆大盘鸡',
-    category: '餐厅',
-    cuisineType: '食堂',
+    category: '食堂',
     cuisine: '西北菜',
     priceLevel: 2,
     avgPrice: 45,
@@ -378,17 +377,17 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 350,
     address: '民主路 82 号',
-    phone: '',
+    phone: [],
     openHours: '11:00-21:30',
     description: '正宗新疆大盘鸡，土豆鸡块花椒香，拉面拌汤汁回味无穷',
-    emoji: '🍛'
+    emoji: '🍛',
+    isActive: true
   },
   // ===== 高价餐厅（"吃点好的"规则使用） =====
   {
     id: 'R021',
     name: '鼎泰丰',
-    category: '餐厅',
-    cuisineType: '台式',
+    category: '台式',
     cuisine: '小笼包',
     priceLevel: 4,
     avgPrice: 120,
@@ -398,16 +397,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 500,
     address: '传媒港时尚中心 1 楼',
-    phone: '',
+    phone: [],
     openHours: '11:00-21:30',
     description: '享誉全球的小笼包，皮薄馅多汁鲜，精致台式料理',
-    emoji: '🥟'
+    emoji: '🥟',
+    isActive: true
   },
   {
     id: 'R022',
     name: '日式铁板烧',
-    category: '餐厅',
-    cuisineType: '日式',
+    category: '日式',
     cuisine: '铁板烧',
     priceLevel: 5,
     avgPrice: 180,
@@ -417,16 +416,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 600,
     address: '宝马大厦 2 楼',
-    phone: '',
+    phone: [],
     openHours: '11:30-22:00',
     description: '顶级和牛铁板烧，主厨现场烹饪，高端商务聚餐首选',
-    emoji: '🥩'
+    emoji: '🥩',
+    isActive: true
   },
   {
     id: 'R023',
     name: '法式西餐厅',
-    category: '餐厅',
-    cuisineType: '其他',
+    category: '其他',
     cuisine: '法餐',
     priceLevel: 5,
     avgPrice: 200,
@@ -436,17 +435,17 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 800,
     address: '网易大厦对面',
-    phone: '',
+    phone: [],
     openHours: '11:00-22:00',
     description: '正宗法式料理，精致摆盘，黑松露牛排，约会圣地',
-    emoji: '🍷'
+    emoji: '🍷',
+    isActive: true
   },
-  // ===== 咖啡饮料店（"coffee time"规则使用） =====
+  // ===== 饮料店（"coffee time"规则使用） =====
   {
     id: 'C001',
     name: 'Manner Coffee',
-    category: '咖啡饮料店',
-    cuisineType: '咖啡',
+    category: '饮料',
     cuisine: '咖啡',
     priceLevel: 1,
     avgPrice: 15,
@@ -456,16 +455,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 100,
     address: '传媒港 B1',
-    phone: '',
+    phone: [],
     openHours: '08:00-20:00',
     description: '高品质精品咖啡，价格亲民，拿铁和美式都很出色',
-    emoji: '☕'
+    emoji: '☕',
+    isActive: true
   },
   {
     id: 'C002',
     name: '星巴克',
-    category: '咖啡饮料店',
-    cuisineType: '咖啡',
+    category: '饮料',
     cuisine: '咖啡',
     priceLevel: 2,
     avgPrice: 35,
@@ -475,16 +474,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 200,
     address: '宝马大厦 1 楼',
-    phone: '',
+    phone: [],
     openHours: '07:30-21:00',
     description: '全球连锁咖啡品牌，环境舒适，适合办公和小憩',
-    emoji: '☕'
+    emoji: '☕',
+    isActive: true
   },
   {
     id: 'C003',
     name: '喜茶',
-    category: '咖啡饮料店',
-    cuisineType: '茶饮',
+    category: '饮料',
     cuisine: '奶茶',
     priceLevel: 2,
     avgPrice: 25,
@@ -494,16 +493,16 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 300,
     address: '网易大厦旁商业街',
-    phone: '',
+    phone: [],
     openHours: '10:00-22:00',
     description: '人气茶饮品牌，多肉葡萄和芝芝莓莓必点',
-    emoji: '🧋'
+    emoji: '🧋',
+    isActive: true
   },
   {
     id: 'C004',
     name: '瑞幸咖啡',
-    category: '咖啡饮料店',
-    cuisineType: '咖啡',
+    category: '饮料',
     cuisine: '咖啡',
     priceLevel: 1,
     avgPrice: 12,
@@ -513,10 +512,11 @@ const restaurants = [
     meals: ['lunch', 'dinner'],
     distance: 80,
     address: '传媒港写字楼大堂',
-    phone: '',
+    phone: [],
     openHours: '08:00-20:00',
     description: '高性价比咖啡，自提方便，经常有优惠券',
-    emoji: '☕'
+    emoji: '☕',
+    isActive: true
   }
 ]
 

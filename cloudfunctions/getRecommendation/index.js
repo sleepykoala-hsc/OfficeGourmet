@@ -10,13 +10,24 @@ cloud.init({
 
 const db = cloud.database()
 
+const FOOD_CATEGORIES = ['食堂', '面食', '广式', '台式', '日式', '快餐', '其他']
+const DRINK_CATEGORY = '饮料'
+
+function isFood(r) {
+  return FOOD_CATEGORIES.includes(r.category)
+}
+
+function isDrinkShop(r) {
+  return r.category === DRINK_CATEGORY
+}
+
 exports.main = async (event, context) => {
   const {
     mealType = 'lunch',   // 'lunch' | 'dinner'
     blacklist = [],       // 黑名单餐厅 id 列表
     favorites = [],       // 收藏餐厅 id 列表
     history = {},         // 历史访问 {id: timestamp}
-    cuisineWeights = {},  // 菜系权重 {cuisineType: percentage}
+    cuisineWeights = {},  // 菜系权重 {category: percentage}
     specialRules = {},    // 特殊规则 {burgerDay, coffeeTime, eatBetter}
     isRainy = false,      // 是否下雨
     filterCuisineType     // UI 菜系过滤
@@ -35,7 +46,7 @@ exports.main = async (event, context) => {
     // —— 规则 (4)[3]："吃点好的" —— 4% 概率无视所有规则
     if (specialRules.eatBetter && Math.random() < 0.04) {
       const expensive = allRestaurants.filter(r =>
-        (r.category === '餐厅') &&
+        isFood(r) &&
         (r.avgPrice > 100) &&
         !blacklist.includes(r._id) && !blacklist.includes(r.id)
       )
@@ -50,9 +61,9 @@ exports.main = async (event, context) => {
       }
     }
 
-    // —— 基础池：category="餐厅"，avgPrice <= 100 ——
+    // —— 基础池：食物类餐厅，avgPrice <= 100 ——
     let pool = allRestaurants.filter(r =>
-      (r.category === '餐厅') &&
+      isFood(r) &&
       (r.avgPrice <= 100) &&
       !blacklist.includes(r._id) && !blacklist.includes(r.id)
     )
@@ -65,7 +76,7 @@ exports.main = async (event, context) => {
 
     // UI 菜系过滤
     if (filterCuisineType && filterCuisineType !== '全部') {
-      const filtered = pool.filter(r => r.cuisineType === filterCuisineType)
+      const filtered = pool.filter(r => r.category === filterCuisineType)
       if (filtered.length > 0) pool = filtered
     }
 
@@ -148,7 +159,7 @@ function shouldExcludeQueue(now) {
 }
 
 function calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, specialRules, now) {
-  const cuisinesInPool = [...new Set(pool.map(r => r.cuisineType))]
+  const cuisinesInPool = [...new Set(pool.map(r => r.category))]
   let effectiveWeights = { ...cuisineWeights }
 
   // Burger Day: 周四将快餐提升到80%
@@ -167,14 +178,14 @@ function calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, spe
 
   const cuisineBaseWeights = {}
   pool.forEach(r => {
-    const ct = r.cuisineType
+    const ct = r.category
     if (!cuisineBaseWeights[ct]) cuisineBaseWeights[ct] = { totalBase: 0, count: 0 }
     cuisineBaseWeights[ct].totalBase += calcWeight(r, history, favorites)
     cuisineBaseWeights[ct].count++
   })
 
   return pool.map(r => {
-    const ct = r.cuisineType
+    const ct = r.category
     const baseWeight = calcWeight(r, history, favorites)
     const cuisinePercent = effectiveWeights[ct] || 10
     const info = cuisineBaseWeights[ct]
@@ -187,7 +198,7 @@ function calcCuisineWeightedScores(pool, history, favorites, cuisineWeights, spe
 
 function pickCoffeeShop(allRestaurants, blacklist, history, favorites) {
   const coffeePool = allRestaurants.filter(r =>
-    (r.category === '咖啡饮料店') &&
+    isDrinkShop(r) &&
     !blacklist.includes(r._id) && !blacklist.includes(r.id)
   )
   if (coffeePool.length === 0) return null

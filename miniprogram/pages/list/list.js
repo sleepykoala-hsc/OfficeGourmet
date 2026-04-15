@@ -1,7 +1,7 @@
 // pages/list/list.js
 const { restaurants: localRestaurants } = require('../../data/restaurants')
 
-const CATEGORIES = ['全部', '中式', '日式', '韩式', '西式', '粤式', '台式', '素食', '东南亚', '西式快餐']
+const CATEGORIES = ['全部', '食堂', '面食', '广式', '台式', '日式', '快餐', '其他', '饮料']
 const SORT_OPTIONS = [
   { label: '综合', value: 'default' },
   { label: '评分', value: 'rating' },
@@ -86,14 +86,14 @@ Page({
       result = result.filter(r =>
         r.name.toLowerCase().includes(kw) ||
         r.cuisine.toLowerCase().includes(kw) ||
-        (r.cuisineType || '').toLowerCase().includes(kw) ||
+        r.category.toLowerCase().includes(kw) ||
         r.tags.some(t => t.toLowerCase().includes(kw))
       )
     }
 
     // 分类过滤
     if (activeCategory && activeCategory !== '全部') {
-      result = result.filter(r => r.cuisineType === activeCategory)
+      result = result.filter(r => r.category === activeCategory)
     }
 
     // 排序

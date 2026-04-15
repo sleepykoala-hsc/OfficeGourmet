@@ -8,7 +8,7 @@
     <view class="hero-content">
       <text class="hero-name">{{restaurant.name}}</text>
       <view class="hero-meta">
-        <text class="hero-category tag tag-orange">{{restaurant.cuisineType || restaurant.category}}</text>
+        <text class="hero-category tag tag-orange">{{restaurant.category}}</text>
         <text class="hero-cuisine">{{restaurant.cuisine}}</text>
       </view>
       <view class="hero-rating">

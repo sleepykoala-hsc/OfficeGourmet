@@ -8,7 +8,7 @@ const SPIN_INTERVAL = 150  // 每帧间隔 ms
 
 const ALL_EMOJIS = ['🍜', '🍛', '🥗', '🍱', '🍣', '🍔', '🥩', '🍲', '🥟', '🍝']
 
-// 菜系过滤列表（使用 cuisineType）
+// 菜系过滤列表（使用 category 字段）
 const CUISINE_TYPES = ['全部', '食堂', '面食', '广式', '台式', '日式', '快餐', '其他']
 
 Page({

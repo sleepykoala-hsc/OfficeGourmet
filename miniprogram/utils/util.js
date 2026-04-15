@@ -6,6 +6,10 @@ const COFFEE_TIME_PROBABILITY = 0.1        // "coffee time"触发概率 10%
 const BURGER_DAY_FAST_FOOD_WEIGHT = 80     // "burger day"快餐权重 80%
 const BURGER_DAY_OTHER_WEIGHT = 20         // "burger day"其他菜系权重 20%
 
+// ===== 分类常量 =====
+const FOOD_CATEGORIES = ['食堂', '面食', '广式', '台式', '日式', '快餐', '其他']
+const DRINK_CATEGORY = '饮料'
+
 /**
  * 格式化时间
  */
@@ -126,6 +130,24 @@ const isBurgerDay = (now) => {
 }
 
 /**
+ * 判断餐厅是否为食物类（非饮料）
+ * @param {object} restaurant
+ * @returns {boolean}
+ */
+const isFood = (restaurant) => {
+  return FOOD_CATEGORIES.includes(restaurant.category)
+}
+
+/**
+ * 判断餐厅是否为饮料店
+ * @param {object} restaurant
+ * @returns {boolean}
+ */
+const isDrinkShop = (restaurant) => {
+  return restaurant.category === DRINK_CATEGORY
+}
+
+/**
  * 获取所有可用的菜系类别（从餐厅数据中提取）
  * @param {object[]} allRestaurants
  * @returns {string[]}
@@ -133,8 +155,8 @@ const isBurgerDay = (now) => {
 const getAllCuisineTypes = (allRestaurants) => {
   const types = new Set()
   allRestaurants.forEach(r => {
-    if (r.category === '餐厅' && r.cuisineType) {
-      types.add(r.cuisineType)
+    if (isFood(r)) {
+      types.add(r.category)
     }
   })
   return [...types]
@@ -143,7 +165,7 @@ const getAllCuisineTypes = (allRestaurants) => {
 /**
  * 获取默认的菜系权重配置
  * @param {object[]} allRestaurants
- * @returns {object} { cuisineType: weight(%) }
+ * @returns {object} { category: weight(%) }
  */
 const getDefaultCuisineWeights = (allRestaurants) => {
   const types = getAllCuisineTypes(allRestaurants)
@@ -175,7 +197,7 @@ const getDefaultCuisineWeights = (allRestaurants) => {
  * @param {string[]} params.blacklist - 黑名单 id
  * @param {string[]} params.favorites - 收藏 id
  * @param {object}   params.history   - 历史访问 {id: timestamp}
- * @param {object}   params.cuisineWeights - 菜系权重 {cuisineType: percentage}
+ * @param {object}   params.cuisineWeights - 菜系权重 {category: percentage}
  * @param {object}   params.specialRules   - 特殊规则开关 {burgerDay, coffeeTime, eatBetter}
  * @param {boolean}  params.isRainy        - 当前是否下雨
  * @param {string}   [params.filterCuisineType] - UI 上选择的菜系过滤
@@ -200,7 +222,7 @@ const recommend = (params) => {
   // —— 特殊规则 (4)[3]："吃点好的" ——
   if (specialRules.eatBetter && Math.random() < EAT_BETTER_PROBABILITY) {
     const expensive = allRestaurants.filter(r =>
-      r.category === '餐厅' &&
+      isFood(r) &&
       r.avgPrice > 100 &&
       !blacklist.includes(r.id)
     )
@@ -216,9 +238,9 @@ const recommend = (params) => {
     // 如果没有高价店，fallthrough 到正常逻辑
   }
 
-  // —— 基础池：category="餐厅"，avgPrice <= 100 ——
+  // —— 基础池：食物类餐厅，avgPrice <= 100 ——
   let pool = allRestaurants.filter(r =>
-    r.category === '餐厅' &&
+    isFood(r) &&
     r.avgPrice <= 100 &&
     !blacklist.includes(r.id)
   )
@@ -231,7 +253,7 @@ const recommend = (params) => {
 
   // UI 菜系过滤（用户在首页手动选择的）
   if (filterCuisineType && filterCuisineType !== '全部') {
-    const filtered = pool.filter(r => r.cuisineType === filterCuisineType)
+    const filtered = pool.filter(r => r.category === filterCuisineType)
     if (filtered.length > 0) pool = filtered
   }
 
@@ -289,8 +311,8 @@ const _tryCoffeeTime = (result, allRestaurants, blacklist, history, favorites, s
  * @private
  */
 const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, specialRules, now) => {
-  // 获取池中所有菜系
-  const cuisinesInPool = [...new Set(pool.map(r => r.cuisineType))]
+  // 获取池中所有菜系（现在是 category 字段）
+  const cuisinesInPool = [...new Set(pool.map(r => r.category))]
 
   // 构建有效的菜系权重映射
   let effectiveWeights = { ...cuisineWeights }
@@ -314,7 +336,7 @@ const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, sp
   // 计算每个菜系在池中的总基础权重
   const cuisineBaseWeights = {}
   pool.forEach(r => {
-    const ct = r.cuisineType
+    const ct = r.category
     if (!cuisineBaseWeights[ct]) cuisineBaseWeights[ct] = { totalBase: 0, count: 0 }
     cuisineBaseWeights[ct].totalBase += calcWeight(r, history, favorites)
     cuisineBaseWeights[ct].count++
@@ -322,7 +344,7 @@ const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, sp
 
   // 将菜系配置的百分比权重分配到每家店
   return pool.map(r => {
-    const ct = r.cuisineType
+    const ct = r.category
     const baseWeight = calcWeight(r, history, favorites)
     const cuisinePercent = effectiveWeights[ct] || 10 // 默认10%
     const info = cuisineBaseWeights[ct]
@@ -341,7 +363,7 @@ const _calcCuisineWeightedScores = (pool, history, favorites, cuisineWeights, sp
  */
 const _pickCoffeeShop = (allRestaurants, blacklist, history, favorites) => {
   const coffeePool = allRestaurants.filter(r =>
-    r.category === '咖啡饮料店' &&
+    isDrinkShop(r) &&
     !blacklist.includes(r.id)
   )
   if (coffeePool.length === 0) return null
@@ -387,5 +409,9 @@ module.exports = {
   shouldExcludeQueue,
   isBurgerDay,
   getAllCuisineTypes,
-  getDefaultCuisineWeights
+  getDefaultCuisineWeights,
+  isFood,
+  isDrinkShop,
+  FOOD_CATEGORIES,
+  DRINK_CATEGORY
 }

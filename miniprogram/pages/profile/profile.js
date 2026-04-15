@@ -29,7 +29,7 @@ Page({
     // 多段条形滑块
     cuisineSegments: [],   // [{name, color, percent}]
     dividers: [],          // 累积百分比分隔点 (length = CUISINE_CONFIG.length - 1)
-    // 菜系权重 { cuisineType: percentage }
+    // 菜系权重 { category: percentage }
     cuisineWeights: {},
     // 特殊规则开关
     specialRules: {
