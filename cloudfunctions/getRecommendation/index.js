@@ -15,7 +15,9 @@ const DRINK_CATEGORY = '饮料'
 const CUISINE_KEYWORDS = ['食堂', '面食', '广式', '台式', '日式', '快餐']
 
 function isFood(r) {
-  return FOOD_CATEGORIES.includes(r.category)
+  // 菜系分类由 getCuisineCategory() 通过 cuisine 字段关键字匹配完成，
+  // 此处仅需排除饮料店即可。
+  return r.category !== DRINK_CATEGORY
 }
 
 function isDrinkShop(r) {

@@ -133,11 +133,13 @@ const isBurgerDay = (now) => {
 
 /**
  * 判断餐厅是否为食物类（非饮料）
+ * 菜系分类由 getCuisineCategory() 通过 cuisine 字段关键字匹配完成，
+ * 此处仅需排除饮料店即可。
  * @param {object} restaurant
  * @returns {boolean}
  */
 const isFood = (restaurant) => {
-  return FOOD_CATEGORIES.includes(restaurant.category)
+  return restaurant.category !== DRINK_CATEGORY
 }
 
 /**
